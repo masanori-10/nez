@@ -1,6 +1,6 @@
 /**
  * math.nez
- * basic mathematical operator 
+ * basic mathematical operator
  * author: Kimio Kuramitsu
  */
 
@@ -26,6 +26,3 @@ Product
 Value
 	= { [0-9]+ #Int }
 	/ '(' Expr ')'
-
-
-
