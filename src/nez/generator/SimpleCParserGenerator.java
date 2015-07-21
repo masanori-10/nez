@@ -29,6 +29,11 @@ import nez.lang.Sequence;
 import nez.lang.Tagging;
 
 public class SimpleCParserGenerator extends ParserGenerator {
+	private int uniqueName;
+
+	public SimpleCParserGenerator() {
+		this.uniqueName = 0;
+	}
 
 	@Override
 	public void makeHeader(Grammar grammar) {
@@ -102,28 +107,17 @@ public class SimpleCParserGenerator extends ParserGenerator {
 				+ "(char* source, size_t* position)");
 		this.openBlock();
 		visitExpression(r);
-		this.file.writeIndent("return 1;");
+		this.file.writeIndent("return 0;");
 		this.closeBlock();
 	}
 
 	@Override
 	public void visitEmpty(Expression p) {
-		this.file.writeIndent("EMPTY");
-		this.file.incIndent();
-		for (int i = 0; i < p.size(); i++) {
-			visitExpression(p.get(i));
-		}
-		this.file.decIndent();
 	}
 
 	@Override
 	public void visitFailure(Expression p) {
-		this.file.writeIndent("FAILUARE");
-		this.file.incIndent();
-		for (int i = 0; i < p.size(); i++) {
-			visitExpression(p.get(i));
-		}
-		this.file.decIndent();
+		this.file.writeIndent("return 1");
 	}
 
 	@Override
@@ -246,7 +240,7 @@ public class SimpleCParserGenerator extends ParserGenerator {
 		this.file
 				.writeIndent("if(p" + p.getLocalName() + "(source, position))");
 		this.openBlock();
-		this.file.writeIndent("return 0;");
+		this.file.writeIndent("return 1;");
 		this.closeBlock();
 	}
 
@@ -365,5 +359,9 @@ public class SimpleCParserGenerator extends ParserGenerator {
 	public void closeBlock() {
 		this.file.decIndent();
 		this.file.writeIndent("}");
+	}
+
+	public int getUniqueName() {
+		return this.uniqueName++;
 	}
 }
