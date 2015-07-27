@@ -1,5 +1,6 @@
 package nez.generator;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 import nez.lang.And;
@@ -31,6 +32,7 @@ import nez.lang.Sequence;
 import nez.lang.Tagging;
 import predicate_to_DFA.CodingErrorException;
 import predicate_to_DFA.DFAReshaper;
+import predicate_to_DFA.EOFTransition;
 import predicate_to_DFA.Enum.SymbolCase;
 import predicate_to_DFA.EpsilonTransition;
 import predicate_to_DFA.PredicateTransition;
@@ -38,7 +40,7 @@ import predicate_to_DFA.Printer;
 import predicate_to_DFA.State;
 import predicate_to_DFA.Transition;
 
-public class DFAGenerator<StateLabel> extends ParserGenerator {
+public class DFAGenerator extends ParserGenerator {
 	private State currentState;
 	private ArrayList<State> stateList;
 	private int predicateDepth;
@@ -64,10 +66,14 @@ public class DFAGenerator<StateLabel> extends ParserGenerator {
 
 	@Override
 	public void makeFooter(Grammar grammar) {
+		this.currentState.addNextTransition(new EOFTransition());
+		this.file.writeIndent();
 		try {
 			this.dfaReshaper.reshapeDEA(this.stateList, this.maxPredicateDepth);
 			this.printer.printDOTFile(this.dfaReshaper.getStateList());
 		} catch (CodingErrorException e) {
+			System.out.println(e);
+		} catch (IOException e) {
 			System.out.println(e);
 		}
 
@@ -89,30 +95,28 @@ public class DFAGenerator<StateLabel> extends ParserGenerator {
 
 	@Override
 	public void visitFailure(Expression p) {
-		this.file.writeIndent("Failure");
 	}
 
 	@Override
 	public void visitAnyChar(AnyChar p) {
-		this.file.writeIndent("AnyChar");
 		Transition newTransition = new Transition();
 		State newState = new State();
 		this.stateList.add(newState);
 		newTransition.setSymbolCase(SymbolCase.ANY);
 		newTransition.setNextState(newState);
+		this.currentState.addNextTransition(newTransition);
 		this.currentState = newState;
 	}
 
 	@Override
 	public void visitByteChar(ByteChar p) {
-		this.file.writeIndent("ByteChar");
 		Transition newTransition = new Transition();
 		State newState = new State();
 		this.stateList.add(newState);
-		Integer symbolCode = p.byteChar;
-		String symbol = symbolCode.toString();
+		String symbol = "" + (char) p.byteChar;
 		newTransition.setSymbolAndCase(symbol, SymbolCase.SYMBOL);
 		newTransition.setNextState(newState);
+		this.currentState.addNextTransition(newTransition);
 		this.currentState = newState;
 	}
 
@@ -128,7 +132,6 @@ public class DFAGenerator<StateLabel> extends ParserGenerator {
 
 	@Override
 	public void visitOption(Option p) {
-		this.file.writeIndent("OPTION");
 		Transition newEpsilonTransition = new EpsilonTransition();
 		this.currentState.addNextTransition(newEpsilonTransition);
 		visitExpression(p.get(0));
@@ -137,7 +140,6 @@ public class DFAGenerator<StateLabel> extends ParserGenerator {
 
 	@Override
 	public void visitRepetition(Repetition p) {
-		this.file.writeIndent("Reptition");
 		Transition newEpsilonTransition = new EpsilonTransition(this.currentState);
 		visitExpression(p.get(0));
 		this.currentState.addNextTransition(newEpsilonTransition);
@@ -146,7 +148,6 @@ public class DFAGenerator<StateLabel> extends ParserGenerator {
 
 	@Override
 	public void visitRepetition1(Repetition1 p) {
-		this.file.writeIndent("REPETITION1");
 		Transition newEpsilonTransition = new EpsilonTransition(this.currentState);
 		visitExpression(p.get(0));
 		this.currentState.addNextTransition(newEpsilonTransition);
@@ -160,13 +161,11 @@ public class DFAGenerator<StateLabel> extends ParserGenerator {
 
 	@Override
 	public void visitNot(Not p) {
-		this.file.writeIndent("NOT");
 		visitExpression(p.get(0));
 	}
 
 	@Override
 	public void visitSequence(Sequence p) {
-		this.file.writeIndent("Sequence");
 		if (p.get(0) instanceof Not) {
 			this.predicateDepth++;
 			if (this.maxPredicateDepth < this.predicateDepth) {
@@ -180,6 +179,7 @@ public class DFAGenerator<StateLabel> extends ParserGenerator {
 			newPredicateTransition.setPredicateDepth(this.predicateDepth);
 			newPredicateTransition.setPredicateNextState(newPredicateState);
 			newPredicateTransition.setNextState(newState);
+			this.currentState.addNextTransition(newPredicateTransition);
 			this.currentState = newPredicateState;
 			visitExpression(p.get(0));
 			this.currentState = newState;
@@ -193,11 +193,14 @@ public class DFAGenerator<StateLabel> extends ParserGenerator {
 
 	@Override
 	public void visitChoice(Choice p) {
-		this.file.writeIndent("CHOICE");
 		State forkPointState = this.currentState;
 		State margePointState = new State();
 		this.stateList.add(margePointState);
 		for (int i = 0; i < p.size(); i++) {
+			State newState = new State();
+			this.stateList.add(newState);
+			this.currentState.addNextTransition(new EpsilonTransition(newState));
+			this.currentState = newState;
 			visitExpression(p.get(i));
 			this.currentState.addNextTransition(new EpsilonTransition(margePointState));
 			this.currentState = forkPointState;
