@@ -1,4 +1,4 @@
-package predicate_to_DFA;
+package dfamaker;
 
 import java.util.ArrayList;
 
@@ -8,7 +8,7 @@ public class State {
 	private ArrayList<Integer> coStateNumber;
 	static private int stateCounter;
 	private boolean isEOP;
-	private boolean isEOS;
+	private int precicateNumber;
 
 	static {
 		stateCounter = 0;
@@ -21,7 +21,7 @@ public class State {
 		this.coStateNumber.add(stateCounter);
 		stateCounter++;
 		this.isEOP = false;
-		this.isEOS = false;
+		this.precicateNumber = 0;
 	}
 
 	public void addNextTransition(Transition nextTransition) {
@@ -46,8 +46,7 @@ public class State {
 		this.coStateNumber = coStateNumber;
 	}
 
-	public void setCoStateNumber(ArrayList<Integer> coStateNumberA,
-			ArrayList<Integer> coStateNumberB) {
+	public void setCoStateNumber(ArrayList<Integer> coStateNumberA, ArrayList<Integer> coStateNumberB) {
 		this.coStateNumber = new ArrayList<Integer>();
 		this.coStateNumber.addAll(coStateNumberA);
 		this.coStateNumber.addAll(coStateNumberB);
@@ -81,12 +80,20 @@ public class State {
 		return this.isEOP;
 	}
 
-	public void setEOS() {
-		this.isEOS = true;
+	public void setPredicateNumber(int predicateNumber) {
+		this.precicateNumber = predicateNumber;
 	}
 
-	public boolean isEOS() {
-		return this.isEOS;
+	public int getPredicateNumber() {
+		return this.precicateNumber;
+	}
+
+	public boolean isNotEOS() {
+		if (this.precicateNumber <= 0) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
 

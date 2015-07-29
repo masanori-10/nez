@@ -1,6 +1,6 @@
-package predicate_to_DFA;
+package dfamaker;
 
-import predicate_to_DFA.Enum.SymbolCase;
+import dfamaker.Enum.SymbolCase;
 
 public class EOFTransition extends Transition {
 	public EOFTransition() {

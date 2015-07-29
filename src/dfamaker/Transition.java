@@ -1,8 +1,8 @@
-package predicate_to_DFA;
+package dfamaker;
 
 import java.util.ArrayList;
 
-import predicate_to_DFA.Enum.SymbolCase;
+import dfamaker.Enum.SymbolCase;
 
 public class Transition {
 	private State nextState;

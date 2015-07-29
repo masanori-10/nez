@@ -1,4 +1,4 @@
-package predicate_to_DFA;
+package dfamaker;
 
 import java.util.ArrayList;
 
@@ -30,17 +30,14 @@ public class DummyEraser {
 	}
 
 	private void checkNextTransition(State startState) {
-		for (int transitionNumber = 0; transitionNumber < startState
-				.getNextTransitions().size(); transitionNumber++) {
-			State implementedState = startState.getNextTransitions()
-					.get(transitionNumber).getNextState();
+		for (int transitionNumber = 0; transitionNumber < startState.getNextTransitions().size(); transitionNumber++) {
+			State implementedState = startState.getNextTransitions().get(transitionNumber).getNextState();
 			if (!(this.implemented(implementedState))) {
 				this.implementedStates.add(implementedState);
 				this.checkNextTransition(implementedState);
 			}
 			if (startState.getNextTransitions().get(transitionNumber) instanceof PredicateTransition) {
-				implementedState = ((PredicateTransition) startState
-						.getNextTransitions().get(transitionNumber))
+				implementedState = ((PredicateTransition) startState.getNextTransitions().get(transitionNumber))
 						.getPredicateNextState();
 				if (!(this.implemented(implementedState))) {
 					this.implementedStates.add(implementedState);

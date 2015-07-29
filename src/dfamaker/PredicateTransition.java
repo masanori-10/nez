@@ -1,13 +1,26 @@
-package predicate_to_DFA;
+package dfamaker;
 
-import predicate_to_DFA.Enum.SymbolCase;
+import dfamaker.Enum.SymbolCase;
 
 public class PredicateTransition extends Transition {
 	private State predicateNextState;
 	private int predicateDepth;
+	private int predicateTransitionNumber;
+	private static int predicateTransitionCounter;
+
+	static {
+		predicateTransitionCounter = 1;
+	}
 
 	public PredicateTransition() {
 		super.setSymbolCase(SymbolCase.PREDICATE);
+		this.predicateTransitionNumber = predicateTransitionCounter;
+		predicateTransitionCounter++;
+	}
+
+	public PredicateTransition(State nextState) {
+		this();
+		super.setNextState(nextState);
 	}
 
 	public void setPredicateNextState(State predicateNextState) {
@@ -24,5 +37,9 @@ public class PredicateTransition extends Transition {
 
 	public int getPreicateDepth() {
 		return this.predicateDepth;
+	}
+
+	public int getPredicateTransitionNumber() {
+		return this.predicateTransitionNumber;
 	}
 }

@@ -1,4 +1,4 @@
-package predicate_to_DFA;
+package dfamaker;
 
 import java.util.ArrayList;
 
@@ -9,13 +9,10 @@ public class EpsilonEraser {
 			State currentState = stateList.get(stateNumber);
 			int transitionNumber = 0;
 			while (transitionNumber < currentState.getNextTransitions().size()) {
-				Transition currentTransition = currentState
-						.getNextTransitions().get(transitionNumber);
+				Transition currentTransition = currentState.getNextTransitions().get(transitionNumber);
 				if (currentTransition instanceof EpsilonTransition) {
 					currentState.getNextTransitions().remove(transitionNumber);
-					currentState.getNextTransitions().addAll(
-							currentTransition.getNextState()
-									.getNextTransitions());
+					currentState.getNextTransitions().addAll(currentTransition.getNextState().getNextTransitions());
 				} else {
 					transitionNumber++;
 				}

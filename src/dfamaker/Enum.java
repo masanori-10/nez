@@ -1,4 +1,4 @@
-package predicate_to_DFA;
+package dfamaker;
 
 public class Enum {
 

@@ -1,4 +1,4 @@
-package predicate_to_DFA;
+package dfamaker;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
-import predicate_to_DFA.Enum.SymbolCase;
+import dfamaker.Enum.SymbolCase;
 
 public class Printer {
 	// private int stateNumber = 0;

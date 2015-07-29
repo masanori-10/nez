@@ -3,6 +3,15 @@ package nez.generator;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import dfamaker.CodingErrorException;
+import dfamaker.DFAReshaper;
+import dfamaker.EOFTransition;
+import dfamaker.Enum.SymbolCase;
+import dfamaker.EpsilonTransition;
+import dfamaker.PredicateTransition;
+import dfamaker.Printer;
+import dfamaker.State;
+import dfamaker.Transition;
 import nez.lang.And;
 import nez.lang.AnyChar;
 import nez.lang.Block;
@@ -30,15 +39,6 @@ import nez.lang.Repetition1;
 import nez.lang.Replace;
 import nez.lang.Sequence;
 import nez.lang.Tagging;
-import predicate_to_DFA.CodingErrorException;
-import predicate_to_DFA.DFAReshaper;
-import predicate_to_DFA.EOFTransition;
-import predicate_to_DFA.Enum.SymbolCase;
-import predicate_to_DFA.EpsilonTransition;
-import predicate_to_DFA.PredicateTransition;
-import predicate_to_DFA.Printer;
-import predicate_to_DFA.State;
-import predicate_to_DFA.Transition;
 
 public class DFAGenerator extends ParserGenerator {
 	private State currentState;
@@ -121,6 +121,7 @@ public class DFAGenerator extends ParserGenerator {
 	public void visitByteMap(ByteMap p) {
 		boolean[] b = p.byteMap;
 		State margeState = new State();
+		this.stateList.add(margeState);
 		for (int start = 0; start < 256; start++) {
 			if (b[start]) {
 				for (int end = start; end < 256; end++) {
@@ -200,6 +201,7 @@ public class DFAGenerator extends ParserGenerator {
 			this.currentState.addNextTransition(newPredicateTransition);
 			this.currentState = newPredicateState;
 			visitExpression(p.get(0));
+			this.currentState.setPredicateNumber(newPredicateTransition.getPredicateTransitionNumber());
 			this.currentState = newState;
 			visitExpression(p.get(1));
 			this.predicateDepth--;
@@ -219,8 +221,33 @@ public class DFAGenerator extends ParserGenerator {
 			this.stateList.add(newState);
 			this.currentState.addNextTransition(new EpsilonTransition(newState));
 			this.currentState = newState;
+			if (i > 0) {
+				for (int j = 0; j < i; j++) {
+					this.predicateDepth++;
+
+					if (this.maxPredicateDepth < this.predicateDepth) {
+						this.maxPredicateDepth = this.predicateDepth;
+					}
+					State newNextState = new State();
+					State newPredicateState = new State();
+					this.stateList.add(newNextState);
+					this.stateList.add(newPredicateState);
+					PredicateTransition newPredicateTransition = new PredicateTransition();
+					newPredicateTransition.setPredicateDepth(this.predicateDepth);
+					newPredicateTransition.setPredicateNextState(newPredicateState);
+					newPredicateTransition.setNextState(newNextState);
+					this.currentState.addNextTransition(newPredicateTransition);
+					this.currentState = newPredicateState;
+					visitExpression(p.get(j));
+					this.currentState.setPredicateNumber(newPredicateTransition.getPredicateTransitionNumber());
+					this.currentState = newNextState;
+					this.predicateDepth--;
+
+				}
+			}
 			visitExpression(p.get(i));
-			this.currentState.addNextTransition(new EpsilonTransition(margePointState));
+			EpsilonTransition epsilonTransition = new EpsilonTransition(margePointState);
+			this.currentState.addNextTransition(epsilonTransition);
 			this.currentState = forkPointState;
 		}
 		this.currentState = margePointState;

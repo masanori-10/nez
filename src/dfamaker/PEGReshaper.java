@@ -1,8 +1,8 @@
-package predicate_to_DFA;
+package dfamaker;
 
 import java.util.ArrayList;
 
-import predicate_to_DFA.Enum.Token;
+import dfamaker.Enum.Token;
 
 public class PEGReshaper {
 	private ArrayList<String> tokenList;
@@ -13,8 +13,7 @@ public class PEGReshaper {
 		this.nextInsertPredicateList = new ArrayList<TokenList>();
 	}
 
-	public void reshapePEG(ArrayList<String> tokenList)
-			throws SyntaxErrorException {
+	public void reshapePEG(ArrayList<String> tokenList) throws SyntaxErrorException {
 		this.tokenList = tokenList;
 		int position = 0;
 		while (position < this.tokenList.size() - 1) {
@@ -23,37 +22,30 @@ public class PEGReshaper {
 			case CHOICE:
 				ArrayList<String> nextInsertPredicate = new ArrayList<String>();
 				nextInsertPredicate.add("!");
-				nextInsertPredicate.addAll(this.nextInsertPredicateList.get(
-						this.nextInsertPredicateList.size() - 1).get());
+				nextInsertPredicate
+						.addAll(this.nextInsertPredicateList.get(this.nextInsertPredicateList.size() - 1).get());
 				nextInsertPredicate.add(")");
-				this.nextInsertPredicateList.get(
-						this.nextInsertPredicateList.size() - 1).add("/");
+				this.nextInsertPredicateList.get(this.nextInsertPredicateList.size() - 1).add("/");
 				this.tokenList.addAll(position + 1, nextInsertPredicate);
 				position += nextInsertPredicate.size();
 				break;
 			case OPEN:
 				this.nextInsertPredicateList.add(new TokenList());
-				this.nextInsertPredicateList.get(
-						this.nextInsertPredicateList.size() - 1).add("(");
+				this.nextInsertPredicateList.get(this.nextInsertPredicateList.size() - 1).add("(");
 				break;
 			case CLOSE:
 				if (this.nextInsertPredicateList.size() <= 1) {
 					System.out.println("Parentheses is not corresponding.");
 					throw new SyntaxErrorException();
 				}
-				this.nextInsertPredicateList.get(
-						this.nextInsertPredicateList.size() - 1).add(")");
-				this.nextInsertPredicateList.get(
-						this.nextInsertPredicateList.size() - 2).addAll(
-						this.nextInsertPredicateList.get(
-								this.nextInsertPredicateList.size() - 1).get());
-				this.nextInsertPredicateList
-						.remove(this.nextInsertPredicateList.size() - 1);
+				this.nextInsertPredicateList.get(this.nextInsertPredicateList.size() - 1).add(")");
+				this.nextInsertPredicateList.get(this.nextInsertPredicateList.size() - 2)
+						.addAll(this.nextInsertPredicateList.get(this.nextInsertPredicateList.size() - 1).get());
+				this.nextInsertPredicateList.remove(this.nextInsertPredicateList.size() - 1);
 				break;
 			default:
-				this.nextInsertPredicateList.get(
-						this.nextInsertPredicateList.size() - 1).add(
-						this.tokenList.get(position));
+				this.nextInsertPredicateList.get(this.nextInsertPredicateList.size() - 1)
+						.add(this.tokenList.get(position));
 				break;
 			}
 			position++;
