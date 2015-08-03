@@ -2,8 +2,11 @@ package dfamaker;
 
 import java.util.ArrayList;
 
+import dfamaker.Enum.SymbolCase;
+
 public class PredicateMarger {
 	private ArrayList<State> stateList;
+	private ArrayList<State> checkedStates;
 
 	public void margePredicate(ArrayList<State> stateList, int predicateDepth) {
 		this.stateList = stateList;
@@ -15,8 +18,15 @@ public class PredicateMarger {
 				if (currentTransition instanceof PredicateTransition) {
 					State predicateState = ((PredicateTransition) currentTransition).getPredicateNextState();
 					if (((PredicateTransition) currentTransition).getPreicateDepth() == predicateDepth) {
-						this.searchEOSAndSetEOP(
-								((PredicateTransition) currentTransition).getPredicateTransitionNumber());
+						this.checkedStates = new ArrayList<State>();
+						int depthA = serchDepth(((PredicateTransition) currentTransition).getPredicateNextState());
+						this.checkedStates = new ArrayList<State>();
+						int depthB = serchDepth(currentTransition.getNextState());
+						if (depthA != -1 && depthB != -1) {
+							for (int i = 0; i < depthA - depthB; i++) {
+								this.addAnyTransitionAndState(currentTransition.getNextState());
+							}
+						}
 						boolean predefined = false;
 						ArrayList<Integer> coStateNumbers = new ArrayList<Integer>();
 						coStateNumbers.addAll(currentTransition.getNextState().getCoStateNumber());
@@ -33,11 +43,25 @@ public class PredicateMarger {
 						if (!(predefined)) {
 							State newState = new State();
 							this.stateList.add(newState);
+							if (currentTransition.getNextState().isEOF()) {
+								newState.setEOF();
+							}
 							newState.setCoStateNumber(currentTransition.getNextState().getCoStateNumber(),
 									((PredicateTransition) currentTransition).getPredicateNextState()
 											.getCoStateNumber());
 							newState.setNextTransitions(predicateState.getNextTransitions());
 							newState.addAllNextTransitions(currentTransition.getNextState().getNextTransitions());
+							if (!(currentTransition.getNextState().getPredicateNumber().isEmpty())) {
+								newState.addAllPredicateNumber(currentTransition.getNextState().getPredicateNumber());
+								newState.addAllTargetPredicateNumber(
+										currentTransition.getNextState().getTargetPredicateNumber());
+							}
+							if (!(((PredicateTransition) currentTransition).getPredicateNextState().getPredicateNumber()
+									.isEmpty())) {
+								newState.addAllPredicateNumber(currentTransition.getNextState().getPredicateNumber());
+								newState.addAllTargetPredicateNumber(
+										currentTransition.getNextState().getTargetPredicateNumber());
+							}
 							Transition newTransition = new EpsilonTransition(newState);
 							currentState.addNextTransition(newTransition);
 						}
@@ -52,10 +76,39 @@ public class PredicateMarger {
 		}
 	}
 
-	private void searchEOSAndSetEOP(int predicateNumber) {
-		for (State state : this.stateList) {
-			if (state.getPredicateNumber() == predicateNumber) {
-				state.setEOP();
+	private int serchDepth(State currentState) {
+		this.checkedStates.add(currentState);
+		if (currentState.getNextTransitions().isEmpty()) {
+			return 0;
+		}
+		int maxDepth = 0;
+		for (Transition currentTransition : currentState.getNextTransitions()) {
+			if (this.checkedStates.contains(currentTransition.getNextState())) {
+				return -1;
+			} else {
+				int currentDepth = serchDepth(currentTransition.getNextState());
+				if (currentDepth == -1) {
+					return -1;
+				}
+				if (maxDepth < currentDepth) {
+					maxDepth = currentDepth;
+				}
+			}
+		}
+		return maxDepth + 1;
+	}
+
+	private void addAnyTransitionAndState(State currentState) {
+		if (currentState.getNextTransitions().isEmpty()) {
+			State newState = new State();
+			this.stateList.add(newState);
+			Transition newTransition = new Transition();
+			newTransition.setSymbolCase(SymbolCase.ANY);
+			newTransition.setNextState(newState);
+			currentState.addNextTransition(newTransition);
+		} else {
+			for (Transition currentTransition : currentState.getNextTransitions()) {
+				this.addAnyTransitionAndState(currentTransition.getNextState());
 			}
 		}
 	}

@@ -7,8 +7,9 @@ public class State {
 	private int stateNumber;
 	private ArrayList<Integer> coStateNumber;
 	static private int stateCounter;
-	private boolean isEOP;
-	private int precicateNumber;
+	private ArrayList<Integer> predicateNumber;
+	private ArrayList<Integer> targetPredicateNumber;
+	private boolean isEOF;
 
 	static {
 		stateCounter = 0;
@@ -20,8 +21,9 @@ public class State {
 		this.stateNumber = stateCounter;
 		this.coStateNumber.add(stateCounter);
 		stateCounter++;
-		this.isEOP = false;
-		this.precicateNumber = 0;
+		this.predicateNumber = new ArrayList<Integer>();
+		this.targetPredicateNumber = new ArrayList<Integer>();
+		this.isEOF = false;
 	}
 
 	public void addNextTransition(Transition nextTransition) {
@@ -64,36 +66,40 @@ public class State {
 		return this.coStateNumber;
 	}
 
-	public void setAccept() {
-		this.stateNumber = -1;
-	}
-
-	public void setEOP() {
-		this.isEOP = true;
-	}
-
 	public void setStateNumber(int stateNumber) {
 		this.stateNumber = stateNumber;
 	}
 
-	public boolean isEOP() {
-		return this.isEOP;
+	public void addPredicateNumber(int predicateNumber) {
+		this.predicateNumber.add(predicateNumber);
 	}
 
-	public void setPredicateNumber(int predicateNumber) {
-		this.precicateNumber = predicateNumber;
+	public void addAllPredicateNumber(ArrayList<Integer> predicateNumber) {
+		this.predicateNumber.addAll(predicateNumber);
 	}
 
-	public int getPredicateNumber() {
-		return this.precicateNumber;
+	public ArrayList<Integer> getPredicateNumber() {
+		return this.predicateNumber;
 	}
 
-	public boolean isNotEOS() {
-		if (this.precicateNumber <= 0) {
-			return true;
-		} else {
-			return false;
-		}
+	public void addTargetPredicateNumber(int targetPredicateNumber) {
+		this.targetPredicateNumber.add(targetPredicateNumber);
+	}
+
+	public void addAllTargetPredicateNumber(ArrayList<Integer> targetPredicateNumber) {
+		this.targetPredicateNumber.addAll(targetPredicateNumber);
+	}
+
+	public ArrayList<Integer> getTargetPredicateNumber() {
+		return this.targetPredicateNumber;
+	}
+
+	public void setEOF() {
+		this.isEOF = true;
+	}
+
+	public boolean isEOF() {
+		return this.isEOF;
 	}
 }
 
@@ -118,12 +124,5 @@ class StateLabel {
 
 	public int getDepthLabel() {
 		return this.depthLabel;
-	}
-}
-
-class AcceptState extends State {
-	public AcceptState() {
-		super();
-		super.setAccept();
 	}
 }

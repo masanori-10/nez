@@ -6,6 +6,8 @@ public class DebugPrinter {
 	public void printStateList(ArrayList<State> stateList) {
 		for (State state : stateList) {
 			System.out.println(state.getStateNumber());
+			System.out.println(state.getPredicateNumber());
+			System.out.println(state.getTargetPredicateNumber());
 			this.printTransitionList(state.getNextTransitions());
 			System.out.println("");
 		}

@@ -28,65 +28,62 @@ public class Printer {
 			// if (!(state.getStateNumber() == -1)) {
 			// this.stateNumber++;
 			// }
+			if (state.isEOF()) {
+				pw.println("	q" + state.getStateNumber() + " [peripheries = 2];");
+			}
 			for (int j = 0; j < state.getNextTransitions().size(); j++) {
 				// System.out.print(" ");
 				pw.print("	");
 				Transition transition = state.getNextTransitions().get(j);
-				if (transition.getSymbolCase() == SymbolCase.EOF) {
-					// System.out.println("q" + state.getStateNumber() + "
-					// [peripheries = 2];");
-					pw.println("q" + state.getStateNumber() + " [peripheries = 2];");
-				} else {
-					// System.out.print("q" + state.getStateNumber() + " -> ");
-					pw.print("q" + state.getStateNumber() + " -> ");
-					// for dubug
-					// System.out.print(state.getCoStateNumber());
-					// System.out.print(state.getPredicateNumber() + "--");
-					// System.out.print("q" +
-					// transition.getNextState().getStateNumber());
-					pw.print("q" + transition.getNextState().getStateNumber());
-					// for debug
-					// System.out.print(transition.getNextState().getCoStateNumber());
-					// System.out.println(transition.getNextState()
-					// .getPredicateNumber());
+				// System.out.print("q" + state.getStateNumber() + " -> ");
+				pw.print("q" + state.getStateNumber() + " -> ");
+				// for dubug
+				// System.out.print(state.getCoStateNumber());
+				// System.out.print(state.getPredicateNumber() + "--");
+				// System.out.print("q" +
+				// transition.getNextState().getStateNumber());
+				pw.print("q" + transition.getNextState().getStateNumber());
+				// for debug
+				// System.out.print(transition.getNextState().getCoStateNumber());
+				// System.out.println(transition.getNextState()
+				// .getPredicateNumber());
 
-					// System.out.print(" [label = \"");
-					pw.print(" [label = \"");
-					if (transition.getSymbolCase() == SymbolCase.SYMBOL) {
-						// System.out.print(transition.getSymbol());
-						pw.print(transition.getSymbol());
-					} else if (transition.getSymbolCase() == SymbolCase.OTHER) {
-						String omittedSymbols = null;
-						int lengthCounter = 0;
-						for (String symbol : transition.getOmittedSymbols().get()) {
-							if (omittedSymbols == null) {
+				// System.out.print(" [label = \"");
+				pw.print(" [label = \"");
+				if (transition.getSymbolCase() == SymbolCase.SYMBOL) {
+					// System.out.print(transition.getSymbol());
+					pw.print(transition.getSymbol());
+				} else if (transition.getSymbolCase() == SymbolCase.OTHER) {
+					String omittedSymbols = null;
+					int lengthCounter = 0;
+					for (String symbol : transition.getOmittedSymbols().get()) {
+						if (omittedSymbols == null) {
+							// System.out.print("_");
+							pw.print("_");
+							omittedSymbols = symbol;
+						} else {
+							if (lengthCounter == 2) {
 								// System.out.print("_");
 								pw.print("_");
-								omittedSymbols = symbol;
-							} else {
-								if (lengthCounter == 2) {
-									// System.out.print("_");
-									pw.print("_");
-									lengthCounter = 0;
-								}
-								// System.out.print("_");
-								pw.print("_");
-								omittedSymbols += ",";
-								omittedSymbols += symbol;
+								lengthCounter = 0;
 							}
-							lengthCounter++;
+							// System.out.print("_");
+							pw.print("_");
+							omittedSymbols += ",";
+							omittedSymbols += symbol;
 						}
-						// System.out.print("\\n");
-						pw.print("\\n");
-						// System.out.print(omittedSymbols);
-						pw.print(omittedSymbols);
-					} else {
-						// System.out.print(transition.getSymbolCase());
-						pw.print(transition.getSymbolCase());
+						lengthCounter++;
 					}
-					// System.out.println("\"];");
-					pw.println("\"];");
+					// System.out.print("\\n");
+					pw.print("\\n");
+					// System.out.print(omittedSymbols);
+					pw.print(omittedSymbols);
+				} else {
+					// System.out.print(transition.getSymbolCase());
+					pw.print(transition.getSymbolCase());
 				}
+				// System.out.println("\"];");
+				pw.println("\"];");
 			}
 		}
 		// System.out.println("}");

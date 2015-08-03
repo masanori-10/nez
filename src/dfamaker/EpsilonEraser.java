@@ -11,6 +11,9 @@ public class EpsilonEraser {
 			while (transitionNumber < currentState.getNextTransitions().size()) {
 				Transition currentTransition = currentState.getNextTransitions().get(transitionNumber);
 				if (currentTransition instanceof EpsilonTransition) {
+					if (currentTransition.getNextState().isEOF()) {
+						currentState.setEOF();
+					}
 					currentState.getNextTransitions().remove(transitionNumber);
 					currentState.getNextTransitions().addAll(currentTransition.getNextState().getNextTransitions());
 				} else {

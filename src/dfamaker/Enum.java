@@ -3,8 +3,8 @@ package dfamaker;
 public class Enum {
 
 	public enum Token {
-		CHOICE("/"), ANY("."), PREDICATE("!"), OPTIONAL("?"), REPETITION("*"), OPEN(
-				"("), CLOSE(")"), EPSILON("E"), OTHER;
+		CHOICE("/"), ANY("."), PREDICATE("!"), OPTIONAL("?"), REPETITION("*"), OPEN("("), CLOSE(")"), EPSILON(
+				"E"), OTHER;
 		private String name;
 
 		public String getName() {
@@ -35,6 +35,6 @@ public class Enum {
 	}
 
 	public enum SymbolCase {
-		ANY, EOF, EPSILON, OTHER, PREDICATE, SYMBOL;
+		ANY, EPSILON, OTHER, PREDICATE, SYMBOL;
 	}
 }

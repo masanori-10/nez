@@ -163,12 +163,19 @@ public class Marger {
 								boolean predefined = false;
 								State margedState = null;
 								ArrayList<Integer> costateNumbers = new ArrayList<Integer>();
+								ArrayList<Integer> predicateNumbers = new ArrayList<Integer>();
 								costateNumbers.addAll(currentTransitionA.getNextState().getCoStateNumber());
 								costateNumbers.addAll(currentTransitionB.getNextState().getCoStateNumber());
+								predicateNumbers.addAll(currentTransitionA.getNextState().getPredicateNumber());
+								predicateNumbers.addAll(currentTransitionB.getNextState().getPredicateNumber());
 								for (State checkState : stateList) {
 									predefined = checkState.getCoStateNumber().containsAll(costateNumbers);
 									predefined = predefined
 											&& costateNumbers.containsAll(checkState.getCoStateNumber());
+									predefined = predefined
+											&& predicateNumbers.containsAll(checkState.getPredicateNumber());
+									predefined = predefined
+											&& checkState.getPredicateNumber().containsAll(predicateNumbers);
 									if (predefined) {
 										margedState = checkState;
 										break;
@@ -176,9 +183,21 @@ public class Marger {
 								}
 								if (margedState == null) {
 									margedState = new State();
-									if (currentTransitionA.getNextState().isEOP()
-											|| currentTransitionB.getNextState().isEOP()) {
-										margedState.setEOP();
+									if (currentTransitionA.getNextState().isEOF()
+											|| currentTransitionB.getNextState().isEOF()) {
+										margedState.setEOF();
+									}
+									if (!(currentTransitionA.getNextState().getPredicateNumber().isEmpty())) {
+										margedState.addAllPredicateNumber(
+												currentTransitionA.getNextState().getPredicateNumber());
+										margedState.addAllTargetPredicateNumber(
+												currentTransitionA.getNextState().getTargetPredicateNumber());
+									}
+									if (!(currentTransitionB.getNextState().getPredicateNumber().isEmpty())) {
+										margedState.addAllPredicateNumber(
+												currentTransitionB.getNextState().getPredicateNumber());
+										margedState.addAllTargetPredicateNumber(
+												currentTransitionB.getNextState().getTargetPredicateNumber());
 									}
 									margedState.setCoStateNumber(costateNumbers);
 									this.stateList.add(margedState);
