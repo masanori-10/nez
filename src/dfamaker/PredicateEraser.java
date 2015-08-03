@@ -20,37 +20,8 @@ public class PredicateEraser {
 		}
 		boolean isCompleted = false;
 		while (!(isCompleted)) {
-			isCompleted = true;
-			{
-				int stateNumber = 0;
-				while (stateNumber < this.stateList.size()) {
-					State currentState = this.stateList.get(stateNumber);
-					if (!(this.checkStateValidity(currentState)) && currentState.getNextTransitions().isEmpty()) {
-						this.stateList.remove(stateNumber);
-						isCompleted = false;
-					} else {
-						stateNumber++;
-					}
-				}
-			}
-
-			{
-				int stateNumber = 0;
-				while (stateNumber < this.stateList.size()) {
-					int transitionNumber = 0;
-					State currentState = this.stateList.get(stateNumber);
-					while (transitionNumber < currentState.getNextTransitions().size()) {
-						State nextState = currentState.getNextTransitions().get(transitionNumber).getNextState();
-						if (!(this.checkStateValidity(nextState)) && nextState.getNextTransitions().isEmpty()) {
-							currentState.getNextTransitions().remove(transitionNumber);
-							isCompleted = false;
-						} else {
-							transitionNumber++;
-						}
-					}
-					stateNumber++;
-				}
-			}
+			isCompleted = this.eraseStates();
+			isCompleted = isCompleted && this.eraceTransitions();
 		}
 	}
 
@@ -96,6 +67,41 @@ public class PredicateEraser {
 				transitionNumber++;
 			}
 		}
+	}
+
+	private boolean eraseStates() {
+		boolean isCompleted = true;
+		int stateNumber = 0;
+		while (stateNumber < this.stateList.size()) {
+			State currentState = this.stateList.get(stateNumber);
+			if (!(this.checkStateValidity(currentState)) && currentState.getNextTransitions().isEmpty()) {
+				this.stateList.remove(stateNumber);
+				isCompleted = false;
+			} else {
+				stateNumber++;
+			}
+		}
+		return isCompleted;
+	}
+
+	private boolean eraceTransitions() {
+		boolean isCompleted = true;
+		int stateNumber = 0;
+		while (stateNumber < this.stateList.size()) {
+			int transitionNumber = 0;
+			State currentState = this.stateList.get(stateNumber);
+			while (transitionNumber < currentState.getNextTransitions().size()) {
+				State nextState = currentState.getNextTransitions().get(transitionNumber).getNextState();
+				if (!(this.checkStateValidity(nextState)) && nextState.getNextTransitions().isEmpty()) {
+					currentState.getNextTransitions().remove(transitionNumber);
+					isCompleted = false;
+				} else {
+					transitionNumber++;
+				}
+			}
+			stateNumber++;
+		}
+		return isCompleted;
 	}
 
 	private boolean checkStateValidity(State checkState) {
