@@ -41,29 +41,7 @@ public class PredicateMarger {
 							}
 						}
 						if (!(predefined)) {
-							State newState = new State();
-							this.stateList.add(newState);
-							if (currentTransition.getNextState().isEOF()) {
-								newState.setEOF();
-							}
-							newState.setCoStateNumber(currentTransition.getNextState().getCoStateNumber(),
-									((PredicateTransition) currentTransition).getPredicateNextState()
-											.getCoStateNumber());
-							newState.setNextTransitions(predicateState.getNextTransitions());
-							newState.addAllNextTransitions(currentTransition.getNextState().getNextTransitions());
-							if (!(currentTransition.getNextState().getPredicateNumber().isEmpty())) {
-								newState.addAllPredicateNumber(currentTransition.getNextState().getPredicateNumber());
-								newState.addAllTargetPredicateNumber(
-										currentTransition.getNextState().getTargetPredicateNumber());
-							}
-							if (!(((PredicateTransition) currentTransition).getPredicateNextState().getPredicateNumber()
-									.isEmpty())) {
-								newState.addAllPredicateNumber(currentTransition.getNextState().getPredicateNumber());
-								newState.addAllTargetPredicateNumber(
-										currentTransition.getNextState().getTargetPredicateNumber());
-							}
-							Transition newTransition = new EpsilonTransition(newState);
-							currentState.addNextTransition(newTransition);
+							addNewState(currentTransition, currentState, predicateState);
 						}
 						currentState.getNextTransitions().remove(transitionNumber);
 					} else {
@@ -74,6 +52,28 @@ public class PredicateMarger {
 				}
 			}
 		}
+	}
+
+	private void addNewState(Transition currentTransition, State currentState, State predicateState) {
+		State newState = new State();
+		this.stateList.add(newState);
+		if (currentTransition.getNextState().isEOF()) {
+			newState.setEOF();
+		}
+		newState.setCoStateNumber(currentTransition.getNextState().getCoStateNumber(),
+				((PredicateTransition) currentTransition).getPredicateNextState().getCoStateNumber());
+		newState.setNextTransitions(predicateState.getNextTransitions());
+		newState.addAllNextTransitions(currentTransition.getNextState().getNextTransitions());
+		if (!(currentTransition.getNextState().getPredicateNumber().isEmpty())) {
+			newState.addAllPredicateNumber(currentTransition.getNextState().getPredicateNumber());
+			newState.addAllTargetPredicateNumber(currentTransition.getNextState().getTargetPredicateNumber());
+		}
+		if (!(((PredicateTransition) currentTransition).getPredicateNextState().getPredicateNumber().isEmpty())) {
+			newState.addAllPredicateNumber(currentTransition.getNextState().getPredicateNumber());
+			newState.addAllTargetPredicateNumber(currentTransition.getNextState().getTargetPredicateNumber());
+		}
+		Transition newTransition = new EpsilonTransition(newState);
+		currentState.addNextTransition(newTransition);
 	}
 
 	private int serchDepth(State currentState) {

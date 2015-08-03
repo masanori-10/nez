@@ -28,11 +28,9 @@ public class DFAReshaper {
 			dummyEraser.eraseDummy(marger.getStateList());
 			predicateEraser.erasePredicate(dummyEraser.getStateList(), maxPredicateDepth);
 			maxPredicateDepth--;
-			debugPrinter.printStateList(stateList);
 		}
 		this.stateList = predicateEraser.getStateList();
 		this.renumberingState();
-		debugPrinter.printStateList(stateList);
 	}
 
 	public ArrayList<State> getStateList() {
