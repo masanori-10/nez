@@ -64,14 +64,6 @@ public class PredicateMarger {
 				((PredicateTransition) currentTransition).getPredicateNextState().getCoStateNumber());
 		newState.setNextTransitions(predicateState.getNextTransitions());
 		newState.addAllNextTransitions(currentTransition.getNextState().getNextTransitions());
-		if (!(currentTransition.getNextState().getPredicateNumber().isEmpty())) {
-			newState.addAllPredicateNumber(currentTransition.getNextState().getPredicateNumber());
-			newState.addAllTargetPredicateNumber(currentTransition.getNextState().getTargetPredicateNumber());
-		}
-		if (!(((PredicateTransition) currentTransition).getPredicateNextState().getPredicateNumber().isEmpty())) {
-			newState.addAllPredicateNumber(currentTransition.getNextState().getPredicateNumber());
-			newState.addAllTargetPredicateNumber(currentTransition.getNextState().getTargetPredicateNumber());
-		}
 		Transition newTransition = new EpsilonTransition(newState);
 		currentState.addNextTransition(newTransition);
 	}
@@ -102,6 +94,8 @@ public class PredicateMarger {
 		if (currentState.getNextTransitions().isEmpty()) {
 			State newState = new State();
 			this.stateList.add(newState);
+			newState.setPredicateDepth(currentState.getPredicateDepth());
+			currentState.setPredicateDepth(0);
 			Transition newTransition = new Transition();
 			newTransition.setSymbolCase(SymbolCase.ANY);
 			newTransition.setNextState(newState);

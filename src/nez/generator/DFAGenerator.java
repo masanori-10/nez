@@ -44,7 +44,6 @@ public class DFAGenerator extends ParserGenerator {
 	private ArrayList<State> stateList;
 	private int predicateDepth;
 	private int maxPredicateDepth;
-	private int currentPredicateTarget;
 	DFAReshaper dfaReshaper;
 	Printer printer;
 
@@ -54,7 +53,6 @@ public class DFAGenerator extends ParserGenerator {
 		this.stateList.add(this.currentState);
 		this.predicateDepth = 0;
 		this.maxPredicateDepth = 0;
-		this.currentPredicateTarget = 0;
 		this.dfaReshaper = new DFAReshaper();
 		this.printer = new Printer();
 	}
@@ -204,8 +202,6 @@ public class DFAGenerator extends ParserGenerator {
 		this.stateList.add(firstState);
 		this.stateList.add(firstPredicateState);
 		PredicateTransition firstPredicateTransition = new PredicateTransition();
-		int firstTargetPredicateNumber = this.currentPredicateTarget;
-		this.currentPredicateTarget = firstPredicateTransition.getPredicateTransitionNumber();
 		firstPredicateTransition.setPredicateDepth(this.predicateDepth);
 		firstPredicateTransition.setPredicateNextState(firstPredicateState);
 		firstPredicateTransition.setNextState(firstState);
@@ -221,20 +217,16 @@ public class DFAGenerator extends ParserGenerator {
 		this.stateList.add(secondState);
 		this.stateList.add(secondPredicateState);
 		PredicateTransition secondPredicateTransition = new PredicateTransition();
-		int secondTargetPredicateNumber = this.currentPredicateTarget;
-		this.currentPredicateTarget = secondPredicateTransition.getPredicateTransitionNumber();
 		secondPredicateTransition.setPredicateDepth(this.predicateDepth);
 		secondPredicateTransition.setPredicateNextState(secondPredicateState);
 		secondPredicateTransition.setNextState(secondState);
 		this.currentState.addNextTransition(secondPredicateTransition);
 		this.currentState = secondPredicateState;
 		visitExpression(p.get(0));
-		this.currentState.addPredicateNumber(secondPredicateTransition.getPredicateTransitionNumber());
-		this.currentState.addTargetPredicateNumber(secondTargetPredicateNumber);
+		this.currentState.setPredicateDepth(secondPredicateDepth);
 		this.currentState = secondState;
 		this.predicateDepth = secondPredicateDepth;
-		this.currentState.addPredicateNumber(firstPredicateTransition.getPredicateTransitionNumber());
-		this.currentState.addTargetPredicateNumber(firstTargetPredicateNumber);
+		this.currentState.setPredicateDepth(firstPredicateDepth);
 		this.currentState = firstState;
 		this.predicateDepth = firstPredicateDepth;
 	}
@@ -252,16 +244,13 @@ public class DFAGenerator extends ParserGenerator {
 		this.stateList.add(newState);
 		this.stateList.add(newPredicateState);
 		PredicateTransition newPredicateTransition = new PredicateTransition();
-		int targetPredicateNumber = this.currentPredicateTarget;
-		this.currentPredicateTarget = newPredicateTransition.getPredicateTransitionNumber();
 		newPredicateTransition.setPredicateDepth(this.predicateDepth);
 		newPredicateTransition.setPredicateNextState(newPredicateState);
 		newPredicateTransition.setNextState(newState);
 		this.currentState.addNextTransition(newPredicateTransition);
 		this.currentState = newPredicateState;
 		visitExpression(p.get(0));
-		this.currentState.addPredicateNumber(newPredicateTransition.getPredicateTransitionNumber());
-		this.currentState.addTargetPredicateNumber(targetPredicateNumber);
+		this.currentState.setPredicateDepth(currentPredicateDepth);
 		this.currentState = newState;
 		this.predicateDepth = currentPredicateDepth;
 	}
@@ -287,6 +276,7 @@ public class DFAGenerator extends ParserGenerator {
 			if (i > 0) {
 				for (int j = 0; j < i; j++) {
 					this.predicateDepth++;
+					int currentPredicateDepth = this.predicateDepth;
 					if (this.maxPredicateDepth < this.predicateDepth) {
 						this.maxPredicateDepth = this.predicateDepth;
 					}
@@ -295,19 +285,15 @@ public class DFAGenerator extends ParserGenerator {
 					this.stateList.add(newNextState);
 					this.stateList.add(newPredicateState);
 					PredicateTransition newPredicateTransition = new PredicateTransition();
-					int targetPredicateNumber = this.currentPredicateTarget;
-					this.currentPredicateTarget = newPredicateTransition.getPredicateTransitionNumber();
 					newPredicateTransition.setPredicateDepth(this.predicateDepth);
 					newPredicateTransition.setPredicateNextState(newPredicateState);
 					newPredicateTransition.setNextState(newNextState);
 					this.currentState.addNextTransition(newPredicateTransition);
 					this.currentState = newPredicateState;
 					visitExpression(p.get(j));
-					this.currentState.addPredicateNumber(newPredicateTransition.getPredicateTransitionNumber());
-					this.currentState.addTargetPredicateNumber(targetPredicateNumber);
+					this.currentState.setPredicateDepth(currentPredicateDepth);
 					this.currentState = newNextState;
 					this.predicateDepth--;
-
 				}
 			}
 			visitExpression(p.get(i));

@@ -22,6 +22,7 @@ public class DFAReshaper {
 
 	public void reshapeDEA(ArrayList<State> stateList, int maxPredicateDepth) throws CodingErrorException {
 		while (maxPredicateDepth >= 0) {
+			debugPrinter.printStateList(stateList);
 			epsilonEraser.eraseEpsilon(stateList);
 			predicateMarger.margePredicate(stateList, maxPredicateDepth);
 			marger.margeTransition(predicateMarger.getStateList());

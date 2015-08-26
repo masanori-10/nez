@@ -7,8 +7,7 @@ public class State {
 	private int stateNumber;
 	private ArrayList<Integer> coStateNumber;
 	static private int stateCounter;
-	private ArrayList<Integer> predicateNumber;
-	private ArrayList<Integer> targetPredicateNumber;
+	private int predicateDepth;
 	private boolean isEOF;
 
 	static {
@@ -21,8 +20,7 @@ public class State {
 		this.stateNumber = stateCounter;
 		this.coStateNumber.add(stateCounter);
 		stateCounter++;
-		this.predicateNumber = new ArrayList<Integer>();
-		this.targetPredicateNumber = new ArrayList<Integer>();
+		this.predicateDepth = 0;
 		this.isEOF = false;
 	}
 
@@ -70,28 +68,12 @@ public class State {
 		this.stateNumber = stateNumber;
 	}
 
-	public void addPredicateNumber(int predicateNumber) {
-		this.predicateNumber.add(predicateNumber);
+	public void setPredicateDepth(int predicateDepth) {
+		this.predicateDepth = predicateDepth;
 	}
 
-	public void addAllPredicateNumber(ArrayList<Integer> predicateNumber) {
-		this.predicateNumber.addAll(predicateNumber);
-	}
-
-	public ArrayList<Integer> getPredicateNumber() {
-		return this.predicateNumber;
-	}
-
-	public void addTargetPredicateNumber(int targetPredicateNumber) {
-		this.targetPredicateNumber.add(targetPredicateNumber);
-	}
-
-	public void addAllTargetPredicateNumber(ArrayList<Integer> targetPredicateNumber) {
-		this.targetPredicateNumber.addAll(targetPredicateNumber);
-	}
-
-	public ArrayList<Integer> getTargetPredicateNumber() {
-		return this.targetPredicateNumber;
+	public int getPredicateDepth() {
+		return this.predicateDepth;
 	}
 
 	public void setEOF() {
