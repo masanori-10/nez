@@ -55,6 +55,9 @@ public class PredicateMarger {
 	}
 
 	private void addNewState(Transition currentTransition, State currentState, State predicateState) {
+		if (predicateState.getPredicateDepth() != 0) {
+			return;
+		}
 		State newState = new State();
 		this.stateList.add(newState);
 		if (currentTransition.getNextState().isEOF()) {
