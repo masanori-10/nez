@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 public class DFAReshaper {
 	private EpsilonEraser epsilonEraser;
+	private NotToAndConverter notToAndConverter;
 	private PredicateMarger predicateMarger;
 	private Marger marger;
 	private DummyEraser dummyEraser;
@@ -13,6 +14,7 @@ public class DFAReshaper {
 
 	public DFAReshaper() {
 		epsilonEraser = new EpsilonEraser();
+		notToAndConverter = new NotToAndConverter();
 		predicateMarger = new PredicateMarger();
 		marger = new Marger();
 		dummyEraser = new DummyEraser();
@@ -21,16 +23,17 @@ public class DFAReshaper {
 	}
 
 	public void reshapeDEA(ArrayList<State> stateList, int maxPredicateDepth) throws CodingErrorException {
+		this.stateList = stateList;
 		while (maxPredicateDepth >= 0) {
-			debugPrinter.printStateList(stateList);
-			epsilonEraser.eraseEpsilon(stateList);
-			predicateMarger.margePredicate(stateList, maxPredicateDepth);
-			marger.margeTransition(predicateMarger.getStateList());
-			dummyEraser.eraseDummy(marger.getStateList());
-			predicateEraser.erasePredicate(dummyEraser.getStateList(), maxPredicateDepth);
+			debugPrinter.printStateList(stateList, maxPredicateDepth);
+			epsilonEraser.eraseEpsilon(this.stateList);
+			notToAndConverter.convertNotToAnd(this.stateList, maxPredicateDepth);
+			predicateMarger.margePredicate(this.stateList, maxPredicateDepth);
+			marger.margeTransition(this.stateList);
+			dummyEraser.eraseDummy(this.stateList);
+			predicateEraser.erasePredicate(this.stateList, maxPredicateDepth);
 			maxPredicateDepth--;
 		}
-		this.stateList = predicateEraser.getStateList();
 		this.renumberingState();
 	}
 

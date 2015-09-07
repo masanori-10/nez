@@ -193,7 +193,8 @@ public class Marger {
 					return true;
 				}
 				break;
-			case PREDICATE:
+			case NOT:
+			case AND:
 			case EPSILON:
 				break;
 			default:
@@ -208,12 +209,16 @@ public class Marger {
 		if (transitionA.getNextState().isEOF() || transitionB.getNextState().isEOF()) {
 			newState.setEOF();
 		}
-		if (transitionA.getNextState().getPredicateDepth() > 0 || transitionB.getNextState().getPredicateDepth() > 0) {
-			if (transitionA.getNextState().getPredicateDepth() > transitionB.getNextState().getPredicateDepth()) {
+		if (transitionA.getNextState().getPredicateDepth() > 0 && transitionB.getNextState().getPredicateDepth() > 0) {
+			if (transitionA.getNextState().getPredicateDepth() < transitionB.getNextState().getPredicateDepth()) {
 				newState.setPredicateDepth(transitionA.getNextState().getPredicateDepth());
 			} else {
 				newState.setPredicateDepth(transitionB.getNextState().getPredicateDepth());
 			}
+		} else if (transitionA.getNextState().getPredicateDepth() > 0) {
+			newState.setPredicateDepth(transitionA.getNextState().getPredicateDepth());
+		} else if (transitionB.getNextState().getPredicateDepth() > 0) {
+			newState.setPredicateDepth(transitionB.getNextState().getPredicateDepth());
 		}
 		newState.setCoStateNumber(costateNumbers);
 		this.stateList.add(newState);

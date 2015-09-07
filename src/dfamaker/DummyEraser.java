@@ -36,9 +36,17 @@ public class DummyEraser {
 				this.implementedStates.add(implementedState);
 				this.checkNextTransition(implementedState);
 			}
-			if (startState.getNextTransitions().get(transitionNumber) instanceof PredicateTransition) {
-				implementedState = ((PredicateTransition) startState.getNextTransitions().get(transitionNumber))
-						.getPredicateNextState();
+			if (startState.getNextTransitions().get(transitionNumber) instanceof NotTransition) {
+				implementedState = ((NotTransition) startState.getNextTransitions().get(transitionNumber))
+						.getNextNotState();
+				if (!(this.implemented(implementedState))) {
+					this.implementedStates.add(implementedState);
+					this.checkNextTransition(implementedState);
+				}
+			}
+			if (startState.getNextTransitions().get(transitionNumber) instanceof AndTransition) {
+				implementedState = ((AndTransition) startState.getNextTransitions().get(transitionNumber))
+						.getNextAndState();
 				if (!(this.implemented(implementedState))) {
 					this.implementedStates.add(implementedState);
 					this.checkNextTransition(implementedState);
@@ -48,16 +56,12 @@ public class DummyEraser {
 	}
 
 	private boolean implemented(State state) {
-		for (int implementedStateNumber = 0; implementedStateNumber < implementedStates
+		for (int implementedStateNumber = 0; implementedStateNumber < this.implementedStates
 				.size(); implementedStateNumber++) {
-			if (implementedStates.get(implementedStateNumber) == state) {
+			if (this.implementedStates.get(implementedStateNumber) == state) {
 				return true;
 			}
 		}
 		return false;
-	}
-
-	public ArrayList<State> getStateList() {
-		return this.stateList;
 	}
 }

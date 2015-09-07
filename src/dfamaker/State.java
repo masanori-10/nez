@@ -84,27 +84,3 @@ public class State {
 		return this.isEOF;
 	}
 }
-
-class StateLabel {
-	private State state;
-	private int positionLabel;
-	private int depthLabel;
-
-	public StateLabel(State state, int positionLabel, int depthLabel) {
-		this.state = state;
-		this.positionLabel = positionLabel;
-		this.depthLabel = depthLabel;
-	}
-
-	public State getState() {
-		return this.state;
-	}
-
-	public int getPositionLabel() {
-		return this.positionLabel;
-	}
-
-	public int getDepthLabel() {
-		return this.depthLabel;
-	}
-}
