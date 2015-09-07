@@ -182,6 +182,7 @@ public class DFAGenerator extends ParserGenerator {
 		visitExpression(p.get(0));
 		this.currentState.addNextTransition(newEpsilonTransition);
 		this.currentState = newEpsilonTransition.getNextState();
+		this.makeNot(p.get(0));
 	}
 
 	@Override
@@ -190,6 +191,7 @@ public class DFAGenerator extends ParserGenerator {
 		Transition newEpsilonTransition = new EpsilonTransition(this.currentState);
 		visitExpression(p.get(0));
 		this.currentState.addNextTransition(newEpsilonTransition);
+		this.makeNot(p.get(0));
 	}
 
 	@Override
@@ -234,6 +236,10 @@ public class DFAGenerator extends ParserGenerator {
 	@Override
 	public void visitNot(Not p) {
 		this.file.writeIndent("not");
+		this.makeNot(p.get(0));
+	}
+
+	private void makeNot(Expression e) {
 		this.predicateDepth++;
 		int currentPredicateDepth = this.predicateDepth;
 		if (this.maxPredicateDepth < this.predicateDepth) {
@@ -249,7 +255,7 @@ public class DFAGenerator extends ParserGenerator {
 		newPredicateTransition.setNextState(newState);
 		this.currentState.addNextTransition(newPredicateTransition);
 		this.currentState = newPredicateState;
-		visitExpression(p.get(0));
+		visitExpression(e);
 		this.currentState.setPredicateDepth(currentPredicateDepth);
 		this.currentState = newState;
 		this.predicateDepth = currentPredicateDepth;
@@ -275,25 +281,7 @@ public class DFAGenerator extends ParserGenerator {
 			this.currentState = newState;
 			if (i > 0) {
 				for (int j = 0; j < i; j++) {
-					this.predicateDepth++;
-					int currentPredicateDepth = this.predicateDepth;
-					if (this.maxPredicateDepth < this.predicateDepth) {
-						this.maxPredicateDepth = this.predicateDepth;
-					}
-					State newNextState = new State();
-					State newPredicateState = new State();
-					this.stateList.add(newNextState);
-					this.stateList.add(newPredicateState);
-					PredicateTransition newPredicateTransition = new PredicateTransition();
-					newPredicateTransition.setPredicateDepth(this.predicateDepth);
-					newPredicateTransition.setPredicateNextState(newPredicateState);
-					newPredicateTransition.setNextState(newNextState);
-					this.currentState.addNextTransition(newPredicateTransition);
-					this.currentState = newPredicateState;
-					visitExpression(p.get(j));
-					this.currentState.setPredicateDepth(currentPredicateDepth);
-					this.currentState = newNextState;
-					this.predicateDepth--;
+					this.makeNot(p.get(j));
 				}
 			}
 			visitExpression(p.get(i));
