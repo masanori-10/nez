@@ -68,6 +68,8 @@ public class InstructionSet {
 	public final static byte Cov = 56;
 	public final static byte Covx = 57;
 
+	public final static byte MLookup = 58;
+
 	public final static byte Label = 127; // 7-bit
 
 	public static String stringfy(byte opcode) {
@@ -190,6 +192,9 @@ public class InstructionSet {
 
 		case Exit:
 			return "exit";
+
+		case MLookup:
+			return "mlookup";
 
 		default:
 			return "-";
