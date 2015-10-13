@@ -6,24 +6,22 @@ import nez.ast.Tree;
 import nez.lang.Expression;
 import nez.lang.Production;
 
-public final class LeftRecursionSupporter {
-	private static HashMap<Production, HashMap<Integer, Tree<?>>> LRSmap;
-}
-
 abstract class AbstractMapInstruction extends Instruction {
+	protected static HashMap<Production, HashMap<Integer, Tree<?>>> LRSmap;
+
 	AbstractMapInstruction(byte opcode, Expression e, Instruction next) {
 		super(opcode, e, next);
 	}
 
 	@Override
 	protected void encodeImpl(ByteCoder c) {
-		// No argument
+		// TODO encode HashMap
 	}
 }
 
-class IMLookup extends AbstractMapInstruction {
-	IMLookup(Expression e, Instruction next) {
-		super(InstructionSet.MLookup, e, next);
+class IMAccess extends AbstractMapInstruction {
+	IMAccess(Expression e, Instruction next) {
+		super(InstructionSet.MAccess, e, next);
 	}
 
 	@Override
