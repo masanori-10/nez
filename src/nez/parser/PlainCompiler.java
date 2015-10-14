@@ -129,7 +129,12 @@ public class PlainCompiler extends NezCompiler {
 	public Instruction encodeNonTerminal(NonTerminal n, Instruction next, Instruction failjump) {
 		Production p = n.getProduction();
 		ParseFunc f = this.getParseFunc(p);
-		return new ICall(f, p.getLocalName(), next);
+
+		// modify for left recursion supporter
+		ICall icall = new ICall(f, p.getLocalName(), next);
+		return new IMAccess(n, icall);
+		// return new ICall(f, p.getLocalName(), next);
+
 	}
 
 	// AST Construction
