@@ -2,7 +2,6 @@ package nez.parser;
 
 import java.util.HashMap;
 
-import nez.ast.Tree;
 import nez.lang.Expression;
 import nez.lang.expr.NonTerminal;
 
@@ -21,88 +20,137 @@ abstract class AbstractMapInstruction extends Instruction {
 	}
 }
 
-class ILRPreCall extends AbstractMapInstruction {
-	private NonTerminal rule;
-	private ILRPostCall post;
-
-	ILRPreCall(NonTerminal rule, Instruction next, ILRPostCall post) {
-		super(InstructionSet.LRPreCall, null, next);
-		if (!growing.containsKey(rule)) {
-			growing.put(rule, new HashMap<Long, MapEntry>());
-		}
-		this.rule = rule;
-		this.post = post;
-	}
-
-	@Override
-	public Instruction exec(RuntimeContext sc) throws TerminationException {
-		long pos = sc.getPosition();
-		this.post.setPos(pos);
-		if (!growing.get(this.rule).containsKey(pos)) {
-			growing.get(this.rule).put(pos, new MapEntry(false, pos));
-			return this.next;
-		} else {
-			sc.setPosition(growing.get(this.rule).get(pos).getPos());
-			if (growing.get(this.rule).get(pos).getAnsType()) {
-				growing.get(this.rule).get(pos).setLRDetected(true);
-				return sc.fail();
-			} else {
-				// TODO ans <- m.ans
-				return this.next;
-			}
-		}
-	}
-}
-
-class ILRPostCall extends AbstractMapInstruction {
-	private NonTerminal rule;
+class ILRCall extends AbstractMapInstruction {
+	ParseFunc f;
+	String name;
+	public Instruction jump = null;
 	private long pos;
-	private boolean isGrow = false;
-	private ICall jump;
 
-	ILRPostCall(NonTerminal rule, Instruction next) {
-		super(InstructionSet.LRPostCall, null, next);
-		this.rule = rule;
+	ILRCall(ParseFunc f, String name, Instruction next) {
+		super(InstructionSet.LRCall, null, next);
+		this.f = f;
+		this.name = name;
 	}
 
-	public void setJump(ICall jump) {
-		this.jump = jump;
+	ILRCall(ParseFunc f, String name, Instruction jump, Instruction next) {
+		super(InstructionSet.LRCall, null, jump);
+		this.name = name;
+		this.f = f;
+		this.jump = next;
 	}
 
-	public void setPos(long pos) {
-		this.pos = pos;
+	void sync() {
+		if (this.jump == null) {
+			this.jump = labeling(this.next);
+			this.next = labeling(f.compiled);
+		}
+		this.f = null;
+	}
+
+	public final String getNonTerminalName() {
+		return this.name;
+	}
+
+	@Override
+	protected String getOperand() {
+		return label(jump);
 	}
 
 	@Override
 	public Instruction exec(RuntimeContext sc) throws TerminationException {
-		if (this.isGrow) {
-			if (sc.getPosition() <= growing.get(rule).get(pos).getPos()) {
-				sc.setPosition(growing.get(rule).get(pos).getPos());
-				// TODO set ast
-				return this.next;
-			}
-			// growing.get(this.rule).get(this.pos).setAst(ast); TODO set ast
-			growing.get(rule).get(pos).setPos(sc.getPosition());
-			sc.setPosition(this.pos);
-			return this.jump;
-		}
-		// growing.get(this.rule).get(this.pos).setAst(ast); TODO set ast
-		growing.get(this.rule).get(this.pos).setPos(sc.getPosition());
-		if (growing.get(this.rule).get(this.pos).getAnsType()) {
-			if (growing.get(this.rule).get(this.pos).getLRDetected() && this.pos != sc.getPosition()) {
-				sc.setPosition(this.pos);
-				this.isGrow = true;
-				return this.jump;
-			}
-		}
-		return this.next;
+
 	}
 }
+
+// class ILRPreCall extends AbstractMapInstruction {
+// private NonTerminal rule;
+// private ILRPostCall post;
+//
+// ILRPreCall(NonTerminal rule, Instruction next, ILRPostCall post) {
+// super(InstructionSet.LRPreCall, null, next);
+// if (!growing.containsKey(rule)) {
+// growing.put(rule, new HashMap<Long, MapEntry>());
+// }
+// this.rule = rule;
+// this.post = post;
+// }
+//
+// @Override
+// public Instruction exec(RuntimeContext sc) throws TerminationException {
+// long pos = sc.getPosition();
+// this.post.setPos(pos);
+// this.post.setBase(sc.getAstMachine().saveTransactionPoint());
+// if (!growing.get(this.rule).containsKey(pos)) {
+// growing.get(this.rule).put(pos, new MapEntry(false, pos));
+// return this.next;
+// } else {
+// sc.setPosition(growing.get(this.rule).get(pos).getPos());
+// if (growing.get(this.rule).get(pos).getAnsType()) {
+// growing.get(this.rule).get(pos).setLRDetected(true);
+// return sc.fail();
+// } else {
+// sc.astMachine.rollTransactionPoint(growing.get(this.rule).get(pos).getResult());
+// return this.next;
+// }
+// }
+// }
+// }
+//
+// class ILRPostCall extends AbstractMapInstruction {
+// private NonTerminal rule;
+// private long pos;
+// private Object base;
+// private boolean isGrow = false;
+// private ICall jump;
+//
+// ILRPostCall(NonTerminal rule, Instruction next) {
+// super(InstructionSet.LRPostCall, null, next);
+// this.rule = rule;
+// }
+//
+// public void setJump(ICall jump) {
+// this.jump = jump;
+// }
+//
+// public void setPos(long pos) {
+// this.pos = pos;
+// }
+//
+// public void setBase(Object base) {
+// this.base = base;
+// }
+//
+// @Override
+// public Instruction exec(RuntimeContext sc) throws TerminationException {
+// if (this.isGrow) {
+// if (sc.getPosition() <= growing.get(this.rule).get(this.pos).getPos()) {
+// sc.setPosition(growing.get(this.rule).get(this.pos).getPos());
+// sc.getAstMachine().rollTransactionPoint(growing.get(this.rule).get(this.pos).getResult());
+// return this.next;
+// }
+// growing.get(this.rule).get(this.pos).setResult(sc.getAstMachine().saveTransactionPoint());
+// growing.get(this.rule).get(this.pos).setPos(sc.getPosition());
+// sc.setPosition(this.pos);
+// sc.getAstMachine().rollTransactionPoint(this.base);
+// return this.jump;
+// }
+// growing.get(this.rule).get(this.pos).setResult(sc.getAstMachine().saveTransactionPoint());
+// growing.get(this.rule).get(this.pos).setPos(sc.getPosition());
+// if (growing.get(this.rule).get(this.pos).getLRDetected() && this.pos !=
+// sc.getPosition()) {
+// sc.setPosition(this.pos);
+// sc.getAstMachine().rollTransactionPoint(this.base);
+// this.isGrow = true;
+// return this.jump;
+// }
+// return this.next;
+// }
+// }
 
 class MapEntry {
 	private boolean ansType; // true -> LR, false -> AST
 	private boolean lrDetected;
-	private Tree<?> ast = null;
+	private Object result;
 	private long pos;
 
 	public MapEntry(boolean lrDetected, long pos) {
@@ -111,9 +159,9 @@ class MapEntry {
 		this.pos = pos;
 	}
 
-	public MapEntry(Tree<?> ast, long pos) {
+	public MapEntry(Object result, long pos) {
 		this.ansType = false;
-		this.ast = ast;
+		this.result = result;
 		this.pos = pos;
 	}
 
@@ -130,13 +178,13 @@ class MapEntry {
 		this.lrDetected = lrDetected;
 	}
 
-	public Tree<?> getAst() {
-		return this.ast;
+	public Object getResult() {
+		return this.result;
 	}
 
-	public void setAst(Tree<?> ast) {
+	public void setResult(Object result) {
 		this.ansType = false;
-		this.ast = ast;
+		this.result = result;
 	}
 
 	public long getPos() {

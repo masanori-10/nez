@@ -29,6 +29,9 @@ public abstract class NezCompiler extends AbstractGenerator {
 			if (inst instanceof ICall) {
 				((ICall) inst).sync();
 			}
+			if (inst instanceof ILRCall) {
+				((ICall) inst).sync();
+			}
 			// Verbose.debug("\t" + inst.id + "\t" + inst);
 		}
 		long t2 = System.nanoTime();

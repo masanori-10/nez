@@ -131,11 +131,10 @@ public class PlainCompiler extends NezCompiler {
 		ParseFunc f = this.getParseFunc(p);
 
 		// modify for left recursion supporter
-		ILRPostCall ipost = new ILRPostCall(n, next);
-		ICall icall = new ICall(f, n.getLocalName(), ipost);
-		ipost.setJump(icall);
-		return new ILRPreCall(n, icall, ipost);
-		// return new ICall(f, p.getLocalName(), next);
+		if (super.strategy.SLR) {
+			return new ILRCall(f, n.getLocalName(), next);
+		}
+		return new ICall(f, p.getLocalName(), next);
 
 	}
 

@@ -68,8 +68,7 @@ public class InstructionSet {
 	public final static byte Cov = 56;
 	public final static byte Covx = 57;
 
-	public final static byte LRPreCall = 58;
-	public final static byte LRPostCall = 59;
+	public final static byte LRCall = 58;
 
 	public final static byte Label = 127; // 7-bit
 
@@ -194,10 +193,8 @@ public class InstructionSet {
 		case Exit:
 			return "exit";
 
-		case LRPreCall:
-			return "lrprecall";
-		case LRPostCall:
-			return "lrpostcall";
+		case LRCall:
+			return "lrcall";
 
 		default:
 			return "-";
