@@ -131,8 +131,9 @@ public class PlainCompiler extends NezCompiler {
 		ParseFunc f = this.getParseFunc(p);
 
 		// modify for left recursion supporter
-		ICall icall = new ICall(f, p.getLocalName(), next);
-		return new IMAccess(n, icall);
+		IMMemo immemo = new IMMemo(n, next);
+		ICall icall = new ICall(f, p.getLocalName(), immemo);
+		return new IMLookup(n, icall, immemo);
 		// return new ICall(f, p.getLocalName(), next);
 
 	}

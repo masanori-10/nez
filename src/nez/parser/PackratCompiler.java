@@ -34,18 +34,20 @@ public class PackratCompiler extends OptimizedCompiler {
 		}
 
 		// modify for left recursion supporter
-		ICall icall = new ICall(f, n.getLocalName(), next);
-		return new IMAccess(n, icall);
+		IMMemo immemo = new IMMemo(n, next);
+		ICall icall = new ICall(f, n.getLocalName(), immemo);
+		return new IMLookup(n, icall, immemo);
 		// return new ICall(f, n.getLocalName(), next);
 
 	}
 
 	private Instruction memoize(NonTerminal n, ParseFunc f, Instruction next) {
 		Instruction inside = new IMemo(n, f.memoPoint, f.state, next);
-		inside = new ICall(f, n.getLocalName(), inside);
 
-		// add for left recursion supporter
-		inside = new IMAccess(n, inside);
+		// modify for left recursion supporter
+		IMMemo immemo = new IMMemo(n, inside);
+		inside = new ICall(f, n.getLocalName(), immemo);
+		inside = new IMLookup(n, inside, immemo);
 
 		inside = new IAlt(n, new IMemoFail(n, f.state, f.memoPoint), inside);
 		return new ILookup(n, f.memoPoint, f.state, inside, next);
@@ -58,8 +60,9 @@ public class PackratCompiler extends OptimizedCompiler {
 		}
 
 		// modify for left recursion supporter
-		ICall icall = new ICall(f, n.getLocalName(), f.compiled_memo, next);
-		return new IMAccess(n, icall);
+		IMMemo immemo = new IMMemo(n, next);
+		ICall icall = new ICall(f, n.getLocalName(), f.compiled_memo, immemo);
+		return new IMLookup(n, icall, immemo);
 		// return new ICall(f, n.getLocalName(), f.compiled_memo, next);
 
 	}
@@ -97,8 +100,9 @@ public class PackratCompiler extends OptimizedCompiler {
 		}
 
 		// modify for left recursion supporter
-		ICall icall = new ICall(f, n.getLocalName(), f.compiled_memoAST, next);
-		return new IMAccess(n, icall);
+		IMMemo immemo = new IMMemo(n, next);
+		ICall icall = new ICall(f, n.getLocalName(), f.compiled_memoAST, immemo);
+		return new IMLookup(n, icall, immemo);
 		// return new ICall(f, n.getLocalName(), f.compiled_memoAST, next);
 
 	}

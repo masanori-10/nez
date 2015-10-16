@@ -68,7 +68,8 @@ public class InstructionSet {
 	public final static byte Cov = 56;
 	public final static byte Covx = 57;
 
-	public final static byte MAccess = 58;
+	public final static byte MLookup = 58;
+	public final static byte MMemo = 59;
 
 	public final static byte Label = 127; // 7-bit
 
@@ -193,8 +194,10 @@ public class InstructionSet {
 		case Exit:
 			return "exit";
 
-		case MAccess:
-			return "maccess";
+		case MLookup:
+			return "mlookup";
+		case MMemo:
+			return "mmemo";
 
 		default:
 			return "-";
