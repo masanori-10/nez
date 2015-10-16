@@ -21,23 +21,23 @@ abstract class AbstractMapInstruction extends Instruction {
 	}
 }
 
-class IMLookup extends AbstractMapInstruction {
+class ILRPreCall extends AbstractMapInstruction {
 	private NonTerminal rule;
-	private IMMemo sync;
+	private ILRPostCall post;
 
-	IMLookup(NonTerminal rule, Instruction next, IMMemo sync) {
-		super(InstructionSet.MLookup, null, next);
+	ILRPreCall(NonTerminal rule, Instruction next, ILRPostCall post) {
+		super(InstructionSet.LRPreCall, null, next);
 		if (!growing.containsKey(rule)) {
 			growing.put(rule, new HashMap<Long, MapEntry>());
 		}
 		this.rule = rule;
-		this.sync = sync;
+		this.post = post;
 	}
 
 	@Override
 	public Instruction exec(RuntimeContext sc) throws TerminationException {
 		long pos = sc.getPosition();
-		this.sync.pos = pos;
+		this.post.setPos(pos);
 		if (!growing.get(this.rule).containsKey(pos)) {
 			growing.get(this.rule).put(pos, new MapEntry(false, pos));
 			return this.next;
@@ -47,28 +47,52 @@ class IMLookup extends AbstractMapInstruction {
 				growing.get(this.rule).get(pos).setLRDetected(true);
 				return sc.fail();
 			} else {
-				return;
+				// TODO ans <- m.ans
+				return this.next;
 			}
 		}
 	}
 }
 
-class IMMemo extends AbstractMapInstruction {
+class ILRPostCall extends AbstractMapInstruction {
 	private NonTerminal rule;
-	protected long pos;
+	private long pos;
+	private boolean isGrow = false;
+	private ICall jump;
 
-	IMMemo(NonTerminal rule, Instruction next) {
-		super(InstructionSet.MLookup, null, next);
+	ILRPostCall(NonTerminal rule, Instruction next) {
+		super(InstructionSet.LRPostCall, null, next);
 		this.rule = rule;
+	}
+
+	public void setJump(ICall jump) {
+		this.jump = jump;
+	}
+
+	public void setPos(long pos) {
+		this.pos = pos;
 	}
 
 	@Override
 	public Instruction exec(RuntimeContext sc) throws TerminationException {
-		growing.get(this.rule).get(this.pos).setAst(ast);
+		if (this.isGrow) {
+			if (sc.getPosition() <= growing.get(rule).get(pos).getPos()) {
+				sc.setPosition(growing.get(rule).get(pos).getPos());
+				// TODO set ast
+				return this.next;
+			}
+			// growing.get(this.rule).get(this.pos).setAst(ast); TODO set ast
+			growing.get(rule).get(pos).setPos(sc.getPosition());
+			sc.setPosition(this.pos);
+			return this.jump;
+		}
+		// growing.get(this.rule).get(this.pos).setAst(ast); TODO set ast
 		growing.get(this.rule).get(this.pos).setPos(sc.getPosition());
 		if (growing.get(this.rule).get(this.pos).getAnsType()) {
 			if (growing.get(this.rule).get(this.pos).getLRDetected() && this.pos != sc.getPosition()) {
-				return;
+				sc.setPosition(this.pos);
+				this.isGrow = true;
+				return this.jump;
 			}
 		}
 		return this.next;

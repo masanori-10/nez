@@ -34,9 +34,10 @@ public class PackratCompiler extends OptimizedCompiler {
 		}
 
 		// modify for left recursion supporter
-		IMMemo immemo = new IMMemo(n, next);
-		ICall icall = new ICall(f, n.getLocalName(), immemo);
-		return new IMLookup(n, icall, immemo);
+		ILRPostCall ipost = new ILRPostCall(n, next);
+		ICall icall = new ICall(f, n.getLocalName(), ipost);
+		ipost.setJump(icall);
+		return new ILRPreCall(n, icall, ipost);
 		// return new ICall(f, n.getLocalName(), next);
 
 	}
@@ -45,9 +46,10 @@ public class PackratCompiler extends OptimizedCompiler {
 		Instruction inside = new IMemo(n, f.memoPoint, f.state, next);
 
 		// modify for left recursion supporter
-		IMMemo immemo = new IMMemo(n, inside);
-		inside = new ICall(f, n.getLocalName(), immemo);
-		inside = new IMLookup(n, inside, immemo);
+		ILRPostCall ipost = new ILRPostCall(n, inside);
+		ICall icall = new ICall(f, n.getLocalName(), ipost);
+		ipost.setJump(icall);
+		inside = new ILRPreCall(n, inside, ipost);
 
 		inside = new IAlt(n, new IMemoFail(n, f.state, f.memoPoint), inside);
 		return new ILookup(n, f.memoPoint, f.state, inside, next);
@@ -60,9 +62,10 @@ public class PackratCompiler extends OptimizedCompiler {
 		}
 
 		// modify for left recursion supporter
-		IMMemo immemo = new IMMemo(n, next);
-		ICall icall = new ICall(f, n.getLocalName(), f.compiled_memo, immemo);
-		return new IMLookup(n, icall, immemo);
+		ILRPostCall ipost = new ILRPostCall(n, next);
+		ICall icall = new ICall(f, n.getLocalName(), ipost);
+		ipost.setJump(icall);
+		return new ILRPreCall(n, icall, ipost);
 		// return new ICall(f, n.getLocalName(), f.compiled_memo, next);
 
 	}
@@ -100,9 +103,10 @@ public class PackratCompiler extends OptimizedCompiler {
 		}
 
 		// modify for left recursion supporter
-		IMMemo immemo = new IMMemo(n, next);
-		ICall icall = new ICall(f, n.getLocalName(), f.compiled_memoAST, immemo);
-		return new IMLookup(n, icall, immemo);
+		ILRPostCall ipost = new ILRPostCall(n, next);
+		ICall icall = new ICall(f, n.getLocalName(), ipost);
+		ipost.setJump(icall);
+		return new ILRPreCall(n, icall, ipost);
 		// return new ICall(f, n.getLocalName(), f.compiled_memoAST, next);
 
 	}
