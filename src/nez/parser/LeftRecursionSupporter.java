@@ -3,10 +3,9 @@ package nez.parser;
 import java.util.HashMap;
 
 import nez.lang.Expression;
-import nez.lang.expr.NonTerminal;
 
 abstract class AbstractMapInstruction extends Instruction {
-	protected static HashMap<NonTerminal, HashMap<Long, MapEntry>> growing = new HashMap<NonTerminal, HashMap<Long, MapEntry>>();
+	protected static HashMap<String, HashMap<Long, MapEntry>> growing = new HashMap<String, HashMap<Long, MapEntry>>();
 	// protected static NonTerminal ruleOrig;
 	// protected static long posOrig;
 
@@ -30,6 +29,9 @@ class ILRCall extends AbstractMapInstruction {
 		super(InstructionSet.LRCall, null, next);
 		this.f = f;
 		this.name = name;
+		if (!growing.containsKey(name)) {
+			growing.put(name, new HashMap<Long, MapEntry>());
+		}
 	}
 
 	ILRCall(ParseFunc f, String name, Instruction jump, Instruction next) {
@@ -58,8 +60,25 @@ class ILRCall extends AbstractMapInstruction {
 
 	@Override
 	public Instruction exec(RuntimeContext sc) throws TerminationException {
-
-	}
+		this.pos = sc.getPosition();
+		if (!growing.get(this.name).containsKey(this.pos)) {
+			growing.get(this.name).put(this.pos, new MapEntry(false, this.pos));
+			StackData s = sc.newUnusedStack();
+			s.ref = this.jump;
+			return this.next;
+		} else {
+			sc.setPosition(growing.get(this.name).get(this.pos).getPos());
+			if (growing.get(this.name).get(this.pos).getAnsType()) {
+				growing.get(this.name).get(this.pos).setLRDetected(true);
+				return sc.fail();
+			} else {
+				sc.astMachine.rollTransactionPoint(growing.get(this.name).get(this.pos).getResult());
+				StackData s = sc.newUnusedStack();
+				s.ref = this.jump;
+				return this.next;
+			}
+		}
+	}// TODO add ILRPostCall
 }
 
 // class ILRPreCall extends AbstractMapInstruction {
