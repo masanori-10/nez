@@ -69,6 +69,7 @@ public class InstructionSet {
 	public final static byte Covx = 57;
 
 	public final static byte LRCall = 58;
+	public final static byte LRGrow = 59;
 
 	public final static byte Label = 127; // 7-bit
 
@@ -195,6 +196,8 @@ public class InstructionSet {
 
 		case LRCall:
 			return "lrcall";
+		case LRGrow:
+			return "lrgrow";
 
 		default:
 			return "-";
