@@ -30,7 +30,10 @@ public abstract class NezCompiler extends AbstractGenerator {
 				((ICall) inst).sync();
 			}
 			if (inst instanceof ILRCall) {
-				((ICall) inst).sync();
+				((ILRCall) inst).sync();
+			}
+			if (inst instanceof ILRGrow) {
+				((ILRGrow) inst).sync();
 			}
 			// Verbose.debug("\t" + inst.id + "\t" + inst);
 		}

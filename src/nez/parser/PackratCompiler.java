@@ -35,7 +35,8 @@ public class PackratCompiler extends OptimizedCompiler {
 
 		// modify for left recursion supporter
 		if (super.strategy.SLR) {
-			return new ILRCall(f, n.getLocalName(), next);
+			ILRGrow grow = new ILRGrow(f, n.getLocalName(), next);
+			return new ILRCall(f, n.getLocalName(), grow);
 		}
 		return new ICall(f, n.getLocalName(), next);
 
@@ -43,13 +44,7 @@ public class PackratCompiler extends OptimizedCompiler {
 
 	private Instruction memoize(NonTerminal n, ParseFunc f, Instruction next) {
 		Instruction inside = new IMemo(n, f.memoPoint, f.state, next);
-
-		// modify for left recursion supporter
-		if (super.strategy.SLR) {
-			inside = new ILRCall(f, n.getLocalName(), inside);
-		} else {
-			inside = new ICall(f, n.getLocalName(), inside);
-		}
+		inside = new ICall(f, n.getLocalName(), inside);
 		inside = new IAlt(n, new IMemoFail(n, f.state, f.memoPoint), inside);
 		return new ILookup(n, f.memoPoint, f.state, inside, next);
 	}
@@ -59,13 +54,7 @@ public class PackratCompiler extends OptimizedCompiler {
 			f.compiled_memo = memoize(n, f, new IRet(n));
 			this.addCachedInstruction(f.compiled_memo);
 		}
-
-		// modify for left recursion supporter
-		if (super.strategy.SLR) {
-			return new ILRCall(f, n.getLocalName(), next);
-		}
 		return new ICall(f, n.getLocalName(), f.compiled_memo, next);
-
 	}
 
 	// AST Construction
@@ -99,13 +88,7 @@ public class PackratCompiler extends OptimizedCompiler {
 			f.compiled_memoAST = memoize(p, n, f, new IRet(p));
 			this.addCachedInstruction(f.compiled_memoAST);
 		}
-
-		// modify for left recursion supporter
-		if (super.strategy.SLR) {
-			return new ILRCall(f, n.getLocalName(), next);
-		}
 		return new ICall(f, n.getLocalName(), f.compiled_memoAST, next);
-
 	}
 
 }

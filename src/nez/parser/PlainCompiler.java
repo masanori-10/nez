@@ -132,7 +132,8 @@ public class PlainCompiler extends NezCompiler {
 
 		// modify for left recursion supporter
 		if (super.strategy.SLR) {
-			return new ILRCall(f, n.getLocalName(), next);
+			ILRGrow grow = new ILRGrow(f, p.getLocalName(), next);
+			return new ILRCall(f, p.getLocalName(), grow);
 		}
 		return new ICall(f, p.getLocalName(), next);
 
