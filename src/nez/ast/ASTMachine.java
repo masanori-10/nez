@@ -101,7 +101,7 @@ public class ASTMachine {
 			save.next = null;
 			this.lastAppendedLog = save;
 		}
-		assert (lastAppendedLog.next == null);
+		assert(lastAppendedLog.next == null);
 	}
 
 	public final void commitTransactionPoint(Symbol label, Object point) {
@@ -110,6 +110,35 @@ public class ASTMachine {
 		this.rollTransactionPoint(point);
 		if (node != null) {
 			logLink(label, node);
+		}
+	}
+
+	// for left recursion supporter
+	public final void backTransactionPoint(Object point) {
+		ASTLog save = (ASTLog) point;
+		if (save != lastAppendedLog) {
+			this.lastAppendedLog = save;
+			this.lastAppendedLog.next = null;
+		}
+	}
+
+	// for left recursion supporter
+	public final Object getNextLog(Object point) {
+		ASTLog save = (ASTLog) point;
+		return save.next;
+	}
+
+	// for left recursion supporter
+	public final void pasteTransactionPoint(Object[] point) {
+		ASTLog start = (ASTLog) point[0];
+		ASTLog end = (ASTLog) point[1];
+		ASTLog current = this.lastAppendedLog;
+		this.lastAppendedLog.next = start;
+		this.lastAppendedLog = end;
+		this.lastAppendedLog.next = null;
+		while (current.next != null) {
+			current.next.id = current.id + 1;
+			current = current.next;
 		}
 	}
 
@@ -158,7 +187,7 @@ public class ASTMachine {
 				start = cur;
 				break;
 			case ASTMachine.Pop:
-				assert (pushed != null);
+				assert(pushed != null);
 				pushed.type = ASTMachine.Link;
 				pushed.label = cur.label;
 				pushed.ref = constructLeft(start, cur, spos, epos, objectSize, tag, value);
@@ -168,13 +197,13 @@ public class ASTMachine {
 				return (Tree<?>) pushed.ref;
 			case ASTMachine.Push:
 				createNode(cur.next, cur);
-				assert (cur.type == ASTMachine.Link);
+				assert(cur.type == ASTMachine.Link);
 			case ASTMachine.Link:
 				objectSize++;
 				break;
 			}
 		}
-		assert (pushed == null);
+		assert(pushed == null);
 		return constructLeft(start, null, spos, epos, objectSize, tag, value);
 	}
 
