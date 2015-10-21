@@ -114,32 +114,15 @@ public class ASTMachine {
 	}
 
 	// for left recursion supporter
-	public final void backTransactionPoint(Object point) {
+	public final Object commitAndGetTransactionPoint(Symbol label, Object point) {
 		ASTLog save = (ASTLog) point;
-		if (save != lastAppendedLog) {
-			this.lastAppendedLog = save;
-			this.lastAppendedLog.next = null;
+		Object node = createNode(save.next, null);
+		this.rollTransactionPoint(point);
+		if (node != null) {
+			logLink(label, node);
+			return node;
 		}
-	}
-
-	// for left recursion supporter
-	public final Object getNextLog(Object point) {
-		ASTLog save = (ASTLog) point;
-		return save.next;
-	}
-
-	// for left recursion supporter
-	public final void pasteTransactionPoint(Object[] point) {
-		ASTLog start = (ASTLog) point[0];
-		ASTLog end = (ASTLog) point[1];
-		ASTLog current = this.lastAppendedLog;
-		this.lastAppendedLog.next = start;
-		this.lastAppendedLog = end;
-		this.lastAppendedLog.next = null;
-		while (current.next != null) {
-			current.next.id = current.id + 1;
-			current = current.next;
-		}
+		return null;
 	}
 
 	private void dump(ASTLog start, ASTLog end) {
