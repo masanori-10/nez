@@ -3,7 +3,9 @@ package nez.parser;
 import java.util.HashMap;
 import java.util.Stack;
 
+import nez.ast.Symbol;
 import nez.lang.Expression;
+import nez.lang.expr.Tlink;
 
 abstract class AbstractLRInstraction extends Instruction {
 	protected static HashMap<String, HashMap<Long, MapEntry>> growing = new HashMap<String, HashMap<Long, MapEntry>>();
@@ -17,6 +19,7 @@ class ILRCall extends AbstractLRInstraction {
 	ParseFunc f;
 	String name;
 	public Instruction jump = null;
+	public final Symbol label;
 
 	private long pos;
 	private Object astlog;
@@ -25,17 +28,18 @@ class ILRCall extends AbstractLRInstraction {
 		super(InstructionSet.LRCall, null, grow);
 		this.f = f;
 		this.name = name;
+		this.label = null;
 
 		if (!growing.containsKey(name)) {
 			growing.put(name, new HashMap<Long, MapEntry>());
 		}
 	}
 
-	ILRCall(ParseFunc f, String name, Instruction jump, ILRGrow grow) {
-		super(InstructionSet.LRCall, null, jump);
-		this.name = name;
+	ILRCall(ParseFunc f, String name, ILRGrow grow, Tlink e) {
+		super(InstructionSet.LRCall, e, grow);
 		this.f = f;
-		this.jump = grow;
+		this.name = name;
+		this.label = e.getLabel();
 
 		if (!growing.containsKey(name)) {
 			growing.put(name, new HashMap<Long, MapEntry>());
@@ -74,7 +78,7 @@ class ILRCall extends AbstractLRInstraction {
 				growing.get(this.name).get(this.pos).setLRDetected(true);
 				return sc.fail();
 			}
-			sc.getAstMachine().pasteTransactionPoint(growing.get(this.name).get(this.pos).getResult());
+			sc.getAstMachine().logLink(null, growing.get(this.name).get(this.pos).getResult());
 			return ((ILRGrow) this.jump).jump;
 		}
 		growing.get(this.name).put(this.pos, new MapEntry(false, this.pos));
@@ -90,6 +94,7 @@ class ILRGrow extends AbstractLRInstraction {
 	ParseFunc f;
 	String name;
 	public Instruction jump = null;
+	public final Symbol label;
 
 	private Stack<Long> pos = new Stack<Long>();
 	private Stack<Object> astlog = new Stack<Object>();
@@ -99,13 +104,14 @@ class ILRGrow extends AbstractLRInstraction {
 		super(InstructionSet.LRGrow, null, next);
 		this.f = f;
 		this.name = name;
+		this.label = null;
 	}
 
-	ILRGrow(ParseFunc f, String name, Instruction jump, Instruction next) {
-		super(InstructionSet.LRGrow, null, jump);
-		this.name = name;
+	ILRGrow(ParseFunc f, String name, Instruction next, Tlink e) {
+		super(InstructionSet.LRGrow, e, next);
 		this.f = f;
-		this.jump = next;
+		this.name = name;
+		this.label = e.getLabel();
 	}
 
 	void sync() {
@@ -143,26 +149,26 @@ class ILRGrow extends AbstractLRInstraction {
 		if (this.isGrow) {
 			if (sc.getPosition() <= growing.get(this.name).get(this.pos.peek()).getPos()) {
 				sc.setPosition(growing.get(this.name).get(this.pos.peek()).getPos());
-				sc.getAstMachine().backTransactionPoint(this.astlog.peek());
-				sc.getAstMachine().pasteTransactionPoint(growing.get(this.name).get(this.pos.peek()).getResult());
+				sc.getAstMachine().rollTransactionPoint(this.astlog.peek());
+				sc.getAstMachine().logLink(null, growing.get(this.name).get(this.pos.peek()).getResult());
 				this.isGrow = false;
 				this.pos.pop();
 				this.astlog.pop();
 				return this.jump;
 			}
 			growing.get(this.name).get(this.pos.peek()).setPos(sc.getPosition());
-			growing.get(this.name).get(this.pos.peek()).setResult(sc.getAstMachine().getNextLog(this.astlog.peek()), sc.getAstMachine().saveTransactionPoint());
+			growing.get(this.name).get(this.pos.peek()).setResult(sc.getAstMachine().commitAndGetTransactionPoint(this.label, this.astlog.peek()));
 			sc.setPosition(this.pos.peek());
-			sc.getAstMachine().backTransactionPoint(this.astlog.peek());
+			sc.getAstMachine().rollTransactionPoint(this.astlog.peek());
 			StackData s = sc.newUnusedStack();
 			s.ref = this;
 			return this.next;
 		}
-		growing.get(this.name).get(this.pos.peek()).setResult(sc.getAstMachine().getNextLog(this.astlog.peek()), sc.getAstMachine().saveTransactionPoint());
+		growing.get(this.name).get(this.pos.peek()).setResult(sc.getAstMachine().commitAndGetTransactionPoint(this.label, this.astlog.peek()));
 		growing.get(this.name).get(this.pos.peek()).setPos(sc.getPosition());
 		if (growing.get(this.name).get(this.pos.peek()).getLRDetected() && this.pos.peek() < sc.getPosition()) {
 			sc.setPosition(this.pos.peek());
-			sc.getAstMachine().backTransactionPoint(this.astlog.peek());
+			sc.getAstMachine().rollTransactionPoint(this.astlog.peek());
 			StackData s = sc.newUnusedStack();
 			s.ref = this;
 			this.isGrow = true;
@@ -177,7 +183,7 @@ class ILRGrow extends AbstractLRInstraction {
 class MapEntry {
 	private boolean ansType; // true -> LR, false -> AST
 	private boolean lrDetected;
-	private Object[] result = new Object[2];
+	private Object result;
 	private long pos;
 
 	public MapEntry(boolean lrDetected, long pos) {
@@ -186,10 +192,9 @@ class MapEntry {
 		this.pos = pos;
 	}
 
-	public MapEntry(Object first, Object end, long pos) {
+	public MapEntry(Object result, long pos) {
 		this.ansType = false;
-		this.result[0] = first;
-		this.result[1] = end;
+		this.result = result;
 		this.pos = pos;
 	}
 
@@ -206,14 +211,13 @@ class MapEntry {
 		this.lrDetected = lrDetected;
 	}
 
-	public Object[] getResult() {
+	public Object getResult() {
 		return this.result;
 	}
 
-	public void setResult(Object first, Object end) {
+	public void setResult(Object result) {
 		this.ansType = false;
-		this.result[0] = first;
-		this.result[1] = end;
+		this.result = result;
 	}
 
 	public long getPos() {
