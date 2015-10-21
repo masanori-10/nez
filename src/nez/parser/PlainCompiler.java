@@ -131,7 +131,7 @@ public class PlainCompiler extends NezCompiler {
 		ParseFunc f = this.getParseFunc(p);
 
 		// modify for left recursion supporter
-		if (super.strategy.SLR) {
+		if (strategy.isEnabled("SLR", Strategy.SLR)) {
 			ILRGrow grow = new ILRGrow(f, p.getLocalName(), next);
 			return new ILRCall(f, p.getLocalName(), grow);
 		}
@@ -144,6 +144,14 @@ public class PlainCompiler extends NezCompiler {
 	@Override
 	public Instruction encodeTlink(Tlink p, Instruction next, Instruction failjump) {
 		if (this.enabledASTConstruction) {
+			if (strategy.isEnabled("SLR", Strategy.SLR)) {
+				NonTerminal n = (NonTerminal) p.get(0);
+				Production pr = n.getProduction();
+				ParseFunc f = this.getParseFunc(pr);
+
+				ILRGrow grow = new ILRGrow(f, pr.getLocalName(), next, p);
+				return new ILRCall(f, pr.getLocalName(), grow, p);
+			}
 			next = new ITPop(p, next);
 			next = encode(p.get(0), next, failjump);
 			return new ITPush(p, next);
