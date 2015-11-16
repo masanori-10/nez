@@ -167,12 +167,18 @@ public abstract class NezCompiler extends AbstractGenerator {
 		}
 		for (State state : dfa.getF()) {
 			int stateID = state.getID() == 0 ? state.getID() : state.getID() - 1;
-			states[stateID] = new IAlt(null, next, states[stateID]);
-			states[stateID] = new ISucc(null, states[stateID]);
+			if (isByte[stateID] != 0) {
+				states[stateID] = new IAlt(null, next, states[stateID]);
+				states[stateID] = new ISucc(null, states[stateID]);
+			} else {
+				states[stateID] = next;
+				states[stateID] = new ISucc(null, states[stateID]);
+			}
 		}
 		for (Transition transition : transitions) {
 			int srcID = transition.getSrc() == 0 ? transition.getSrc() : transition.getSrc() - 1;
 			int dstID = transition.getDst() == 0 ? transition.getDst() : transition.getDst() - 1;
+
 			if (isByte[srcID] == -1) {
 				if (states[srcID] instanceof IDFirst) {
 					((IDFirst) states[srcID]).setJumpTable(transition.getLabel(), states[dstID]);
