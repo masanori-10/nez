@@ -712,7 +712,7 @@ class IDFirst extends IFirst {
 	public Instruction exec(RuntimeContext sc) throws TerminationException {
 		int ch = sc.byteAt(sc.getPosition());
 		sc.consume(1);
-		return jumpTable[ch].exec(sc);
+		return jumpTable[ch];
 	}
 }
 
