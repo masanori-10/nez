@@ -15,10 +15,12 @@ public class DOTGenerator {
 	}
 
 	private static final String dotFileName = "__graph";
+	private static int fileID = 0;
 	private static final String fColor = "#4169E1"; // royalblue
 	private static final String FColor = "#7fffd4"; // aquamarine
 	private static final String LColor = "#ff6347"; // tomato
-	private static final String FLColor = "#9400d3"; // darkviolet,　ひとつのノードが通常の受理状態と先読みの受理状態の両方を持つ場合
+	private static final String FLColor = "#9400d3"; // darkviolet,
+														// ひとつのノードが通常の受理状態と先読みの受理状態の両方を持つ場合
 
 	private static void execCommandLine(String command) {
 		try {
@@ -36,7 +38,7 @@ public class DOTGenerator {
 			return;
 		}
 		try {
-			File file = new File(dotFileName + ".dot");
+			File file = new File(dotFileName + fileID + ".dot");
 			PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
 
 			pw.println("\ndigraph g {");
@@ -89,11 +91,12 @@ public class DOTGenerator {
 			System.out.println(e);
 		}
 
-		execCommandLine("dot -Kdot -Tpng " + dotFileName + ".dot -o " + dotFileName + ".png");
+		execCommandLine("dot -Kdot -Tpng " + dotFileName + fileID + ".dot -o " + dotFileName + ".png");
 		// execCommandLine("open " + dotFileName + ".png &");
 		// execCommandLine("rm " + dotFileName + ".dot");
 		// execCommandLine("rm " + dotFileName + ".png");
 
+		fileID++;
 	}
 
 	public static boolean isVisible(int v) {
@@ -123,7 +126,7 @@ public class DOTGenerator {
 				tau.get(src).get(dst).add(new Integer(label));
 			}
 
-			File file = new File(dotFileName + ".dot");
+			File file = new File(dotFileName + fileID + ".dot");
 			PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(file)));
 
 			pw.println("\ndigraph g {");
@@ -195,7 +198,7 @@ public class DOTGenerator {
 			// for (Transition transition : dfa.getTau()) {
 			// int label = transition.getLabel();
 			// int predicate = transition.getPredicate();
-			// pw.print("	\"" + transition.getSrc() + "\"->\"" +
+			// pw.print(" \"" + transition.getSrc() + "\"->\"" +
 			// transition.getDst() + "\"[label=\"");
 			// if (predicate == 0) {
 			// pw.print("&predicate");
@@ -219,10 +222,11 @@ public class DOTGenerator {
 			System.out.println(e);
 		}
 
-		execCommandLine("dot -Kdot -Tpng " + dotFileName + ".dot -o " + dotFileName + ".png");
+		execCommandLine("dot -Kdot -Tpng " + dotFileName + fileID + ".dot -o " + dotFileName + fileID + ".png");
 		// execCommandLine("open " + dotFileName + ".png &");
 		// execCommandLine("rm " + dotFileName + ".dot");
 		// execCommandLine("rm " + dotFileName + ".png");
 
+		fileID++;
 	}
 }

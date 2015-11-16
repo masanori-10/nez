@@ -8,7 +8,7 @@ import nez.io.StringContext;
 
 public class DFA {
 	private HashSet<State> S = null;
-	private TreeSet<Transition> tau = null;
+	public TreeSet<Transition> tau = null;
 	private State f = null;
 	private HashSet<State> F = null;
 
