@@ -26,6 +26,13 @@ public class AFAConverter extends VisitorMap<DefaultVisitor> {
 	private int theNumberOfStates;
 	final private String StartProduction = "Start";
 
+	public AFAConverter() {
+		this.initialStateOfNonTerminal = new HashMap<String, State>();
+		this.acceptingStateOfNonTerminal = new HashMap<String, State>();
+		this.theNumberOfStates = 0;
+		init(AFAConverter.class, new DefaultVisitor());
+	}
+
 	public AFAConverter(Grammar grammar) {
 		this.grammar = grammar;
 		this.initialStateOfNonTerminal = new HashMap<String, State>();
@@ -44,6 +51,17 @@ public class AFAConverter extends VisitorMap<DefaultVisitor> {
 		this.afa = visitProduction(p);
 		this.afa = eliminateEpsilonCycle(this.afa);
 		DOTGenerator.writeAFA(this.afa);
+	}
+
+	public void build(Production p) {
+		if (p == null) {
+			System.out.println("ERROR : START PRODUCTION \"" + StartProduction + "\" ... NOT FOUND");
+			System.out.println("BUILD FAILED");
+			return;
+		}
+		this.afa = visitProduction(p);
+
+		this.afa = eliminateEpsilonCycle(this.afa);
 	}
 
 	/*
@@ -246,7 +264,8 @@ public class AFAConverter extends VisitorMap<DefaultVisitor> {
 			return new AFA(S, transitions, f, F, L);
 
 			// // System.out.println("here is Poption : " + e);
-			// System.out.println("WARNING : option FOUND ... e? should be converted into ( e | !e ε )");
+			// System.out.println("WARNING : option FOUND ... e? should be
+			// converted into ( e | !e ε )");
 			//
 			// // e? について、 e の AFA を tmpAfa として構築
 			// // AFA tmpAfa = visitExpression(e.get(0));
@@ -515,7 +534,8 @@ public class AFAConverter extends VisitorMap<DefaultVisitor> {
 			return new AFA(S, transitions, f, F, L);
 
 			// // System.out.println("here is Pone : " + e);
-			// System.out.println("WARNING : zero or more FOUND ... e+ should be converted into eA where A <- eA | !(eA) ε ");
+			// System.out.println("WARNING : zero or more FOUND ... e+ should be
+			// converted into eA where A <- eA | !(eA) ε ");
 			// // e+ について、 e の AFA を tmpAfa として構築
 			// // AFA tmpAfa = visitExpression(e.get(0));
 			// AFA tmpAfa = visit(e.get(0));
