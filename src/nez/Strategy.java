@@ -42,6 +42,7 @@ public class Strategy {
 	public final static boolean Winfo = false;
 
 	public final static boolean Moz = false; // for MozCompiler
+	public final static boolean DFA = false; // for DFACompiler
 
 	public static boolean Doption = false; // for verbose option
 	public static boolean Dgrammar = false; // for debugging grammar
