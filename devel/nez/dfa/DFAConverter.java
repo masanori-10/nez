@@ -94,9 +94,12 @@ public class DFAConverter {
 				return new And(((predicateType.get(0) == 1) ? new Not(tmp) : tmp), new LogicVariable(be.getID()));
 			} else {
 				// if (epsilon.size() != 1) {
-				// System.out.println("FATAL ERROR : epsilonExpansionLogicVariable : predicate and epsilon.size() = "
+				// System.out.println("FATAL ERROR :
+				// epsilonExpansionLogicVariable : predicate and epsilon.size()
+				// = "
 				// + epsilon.size() +
-				// " : epsilon.size() must be 1 or My understanding is a little bit wrong");
+				// " : epsilon.size() must be 1 or My understanding is a little
+				// bit wrong");
 				// }
 				if (epsilon.size() == 1) {
 					BooleanExpression left = epsilonExpansion(predicate.get(0));
@@ -324,7 +327,7 @@ public class DFAConverter {
 				int src = BDDIDtoVertexID.get(bdd.build(be));
 				int dst = -1;
 				if (!BDDIDtoVertexID.containsKey(new Integer(bddID))) { // 初めて現れた状態ならば追加する
-					System.out.println("vertexID = " + vertexID);
+					// System.out.println("vertexID = " + vertexID);
 					S.add(new State(vertexID));
 					if (epsilonExpansionTransitBe.eval(afa.getF(), afa.getL())) {
 						F.add(new State(vertexID));
@@ -428,8 +431,11 @@ public class DFAConverter {
 			if (hasOtherwise) {
 				// System.out.println(be + " -> FATAL SUPPORT : " +
 				// predicate.get(0));
-				// System.out.println("FATAL ERROR : epsilonExpansionLogicVariable : predicate.size() == 1 && hasOtherwise");
-				// System.out.println("WARNING : epsilonExpansionLogicVariable : predicate.size() == 1 && hasOtherwise");
+				// System.out.println("FATAL ERROR :
+				// epsilonExpansionLogicVariable : predicate.size() == 1 &&
+				// hasOtherwise");
+				// System.out.println("WARNING : epsilonExpansionLogicVariable :
+				// predicate.size() == 1 && hasOtherwise");
 			}
 			if (epsilon.isEmpty()) {
 				// BooleanExpression tmp =
@@ -439,9 +445,12 @@ public class DFAConverter {
 				return new And(((predicateType.get(0) == 1) ? new Not(tmp) : tmp), new LogicVariable(-be.getID()));
 			} else {
 				// if (epsilon.size() != 1) {
-				// System.out.println("FATAL ERROR : epsilonExpansionLogicVariable : predicate and epsilon.size() = "
+				// System.out.println("FATAL ERROR :
+				// epsilonExpansionLogicVariable : predicate and epsilon.size()
+				// = "
 				// + epsilon.size() +
-				// " : epsilon.size() must be 1 or My understanding is a little bit wrong");
+				// " : epsilon.size() must be 1 or My understanding is a little
+				// bit wrong");
 				// }
 				if (epsilon.size() == 1) {
 					// BooleanExpression left =
