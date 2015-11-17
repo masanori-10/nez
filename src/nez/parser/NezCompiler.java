@@ -86,6 +86,7 @@ public abstract class NezCompiler extends AbstractGenerator {
 
 		// modify for DFACompiler
 		if (strategy.isEnabled("DFA", Strategy.DFA)) {
+			// if (checkException(p))
 			if (checkNonExsistNonterminal(p.getExpression())) {
 				AFAConverter afaConverter = new AFAConverter();
 				afaConverter.build(p);
@@ -142,12 +143,27 @@ public abstract class NezCompiler extends AbstractGenerator {
 	static Instruction commonFailure = new IFail(null);
 
 	private Instruction encodeDFA(DFA dfa, Instruction next) {
-		Instruction states[] = new Instruction[dfa.getS().size() - 1];
-		int isByte[] = new int[dfa.getS().size() - 1];
+		boolean isNeed[] = new boolean[dfa.getS().size()];
+		boolean more = true;
+		for (State state : dfa.getF()) {
+			isNeed[state.getID()] = true;
+		}
+		while (more) {
+			more = false;
+			for (Transition transition : dfa.getTau()) {
+				if (isNeed[transition.getDst()] && !isNeed[transition.getSrc()]) {
+					isNeed[transition.getSrc()] = true;
+					more = true;
+				}
+			}
+		}
+
+		Instruction states[] = new Instruction[dfa.getS().size()];
+		int isByte[] = new int[dfa.getS().size()];
 		TreeSet<Transition> transitions = new TreeSet<Transition>();
 		for (Transition transition : dfa.getTau()) {
-			if (transition.getLabel() != 0 && transition.getSrc() != 1 && transition.getDst() != 1) {
-				int srcID = transition.getSrc() == 0 ? transition.getSrc() : transition.getSrc() - 1;
+			if (transition.getLabel() != 0 && isNeed[transition.getSrc()] && isNeed[transition.getDst()]) {
+				int srcID = transition.getSrc();
 				transitions.add(transition);
 				if (isByte[srcID] == 0) {
 					isByte[srcID] = transition.getLabel();
@@ -156,17 +172,19 @@ public abstract class NezCompiler extends AbstractGenerator {
 				}
 			}
 		}
-		for (int i = 0; i < dfa.getS().size() - 1; i++) {
-			if (isByte[i] == -1) {
-				states[i] = new IDFirst(null, commonFailure);
-			} else if (isByte[i] == 0) {
-				states[i] = commonFailure;
-			} else {
-				states[i] = new IByte((Cbyte) ExpressionCommons.newCbyte(null, false, isByte[i]), commonFailure);
+		for (int i = 0; i < dfa.getS().size(); i++) {
+			if (isNeed[i]) {
+				if (isByte[i] == -1) {
+					states[i] = new IDFirst(null, commonFailure);
+				} else if (isByte[i] == 0) {
+					states[i] = commonFailure;
+				} else {
+					states[i] = new IByte((Cbyte) ExpressionCommons.newCbyte(null, false, isByte[i]), commonFailure);
+				}
 			}
 		}
 		for (State state : dfa.getF()) {
-			int stateID = state.getID() == 0 ? state.getID() : state.getID() - 1;
+			int stateID = state.getID();
 			if (isByte[stateID] != 0) {
 				states[stateID] = new IAlt(null, next, states[stateID]);
 				states[stateID] = new ISucc(null, states[stateID]);
@@ -176,8 +194,8 @@ public abstract class NezCompiler extends AbstractGenerator {
 			}
 		}
 		for (Transition transition : transitions) {
-			int srcID = transition.getSrc() == 0 ? transition.getSrc() : transition.getSrc() - 1;
-			int dstID = transition.getDst() == 0 ? transition.getDst() : transition.getDst() - 1;
+			int srcID = transition.getSrc();
+			int dstID = transition.getDst();
 
 			if (isByte[srcID] == -1) {
 				if (states[srcID] instanceof IDFirst) {
@@ -194,7 +212,7 @@ public abstract class NezCompiler extends AbstractGenerator {
 			}
 		}
 		dfa.tau = transitions;
-		return new IAlt(null, commonFailure, states[dfa.getf().getID() == 0 ? dfa.getf().getID() : dfa.getf().getID() - 1]);
+		return new IAlt(null, commonFailure, states[dfa.getf().getID()]);
 	}
 
 	private boolean checkNonExsistNonterminal(Expression e) {
@@ -206,6 +224,12 @@ public abstract class NezCompiler extends AbstractGenerator {
 				return false;
 			}
 		}
+		return true;
+	}
+
+	private boolean checkException(Production p) {
+		if (p.getLocalName().equals("DECIMAL"))
+			return false;
 		return true;
 	}
 }
