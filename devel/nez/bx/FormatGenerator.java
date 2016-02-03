@@ -49,8 +49,8 @@ public class FormatGenerator {
 	private Grammar grammar = null;
 
 	private Element currentLeft = null;
-	private Captured[] nonterminalList = new Captured[4];
-	private String[] nonterminalNameList = new String[4];
+	private Elements[] productionList = new Elements[4];
+	private String[] productionNameList = new String[4];
 	private Captured[] capturedList = new Captured[4];
 	private String[] tagList = new String[4];
 	private Elements[] elementsStack = new Elements[4];
@@ -93,31 +93,31 @@ public class FormatGenerator {
 			int nonterminalId = convertNonterminalName(nonterminalName);
 			elementsStack[stackTop] = new Elements();
 			makeProductionFormat(rule);
-			nonterminalList[nonterminalId] = new Captured(elementsStack[stackTop], nonterminalName);
+			productionList[nonterminalId] = elementsStack[stackTop];
 		}
 	}
 
 	public int convertNonterminalName(String nonterminalName) {
 		for (int i = 0; i < nonterminalId; i++) {
-			if (nonterminalName.equals(nonterminalNameList[i])) {
+			if (nonterminalName.equals(productionNameList[i])) {
 				return i;
 			}
 		}
-		if (nonterminalId == nonterminalNameList.length) {
-			String[] newList = new String[nonterminalNameList.length * 2];
-			System.arraycopy(nonterminalNameList, 0, newList, 0, nonterminalNameList.length);
-			nonterminalNameList = newList;
-			Captured[] newList2 = new Captured[nonterminalList.length * 2];
-			System.arraycopy(nonterminalList, 0, newList2, 0, nonterminalList.length);
-			nonterminalList = newList2;
+		if (nonterminalId == productionNameList.length) {
+			String[] newList = new String[productionNameList.length * 2];
+			System.arraycopy(productionNameList, 0, newList, 0, productionNameList.length);
+			productionNameList = newList;
+			Elements[] newList2 = new Elements[productionList.length * 2];
+			System.arraycopy(productionList, 0, newList2, 0, productionList.length);
+			productionList = newList2;
 		}
-		nonterminalNameList[nonterminalId] = nonterminalName;
+		productionNameList[nonterminalId] = nonterminalName;
 		return nonterminalId++;
 	}
 
 	public void reshapeFormat() {
 		for (int i = 0; i < nonterminalId; i++) {
-			nonterminalList[i].elements = reshapeElements(nonterminalList[i].elements);
+			productionList[i] = reshapeElements(productionList[i]);
 		}
 	}
 
@@ -151,7 +151,7 @@ public class FormatGenerator {
 			if (this.capturedList[i] == null) {
 				break;
 			}
-			capturedList[i].setFormat(i);
+			capturedList[i].makeFormatSet(i);
 			for (int j = 0; j < checkedTag.size; j++) {
 				((TagElement) checkedTag.get(j)).unused = true;
 			}
@@ -538,7 +538,6 @@ public class FormatGenerator {
 	}
 
 	class Captured {
-		String name;
 		Elements elements;
 		FormatSet[] formatSet = new FormatSet[4];
 		Elements left;
@@ -546,19 +545,13 @@ public class FormatGenerator {
 		int size = 0;
 
 		public Captured(Elements elements) {
-			name = null;
 			this.elements = elements;
 		}
 
-		public Captured(Elements elements, String name) {
-			this(elements);
-			this.name = name;
-		}
-
-		public void setFormat(int capturedId) {
+		public void makeFormatSet(int capturedId) {
 			while (true) {
 				checkedNonterminal = new boolean[nonterminalId];
-				int tag = searchTag();
+				int tag = elements.searchTag();
 				if (tag != -1) {
 					if (size == formatSet.length) {
 						FormatSet[] newList = new FormatSet[formatSet.length * 2];
@@ -568,7 +561,7 @@ public class FormatGenerator {
 					formatSet[size] = new FormatSet();
 					formatSet[size].tag = tag;
 					checkedNonterminal = new boolean[nonterminalId];
-					formatSet[size++].link = searchLink();
+					formatSet[size++].link = elements.searchLink();
 				} else {
 					break;
 				}
@@ -634,24 +627,10 @@ public class FormatGenerator {
 			return labelSet.label;
 		}
 
-		public int searchTag() {
-			return elements.searchTag();
-		}
-
-		public Elements searchLink() {
-			return elements.searchLink();
-		}
-
-		public LinkedInner[] checkInner() {
-			return elements.checkInner();
-		}
-
 		public String toFormat(int tag) {
 			String formats = elements.toFormat(tag);
-			if (this.name == null) {
-				if (formats == null || formats.indexOf("${") == -1) {
-					return null;
-				}
+			if (formats == null || formats.indexOf("${") == -1) {
+				return null;
 			}
 			return formats;
 		}
@@ -849,7 +828,7 @@ public class FormatGenerator {
 
 	class NonTerminalElement extends Element {
 		int id;
-		Captured captured;
+		Elements elements;
 
 		public NonTerminalElement(int id) {
 			this.id = id;
@@ -862,7 +841,7 @@ public class FormatGenerator {
 				return null;
 			}
 			checkedNonterminal[id] = true;
-			return captured.searchLink();
+			return elements.searchLink();
 		}
 
 		@Override
@@ -872,7 +851,7 @@ public class FormatGenerator {
 				return -1;
 			}
 			checkedNonterminal[id] = true;
-			return captured.searchTag();
+			return elements.searchTag();
 		}
 
 		@Override
@@ -882,23 +861,23 @@ public class FormatGenerator {
 				return null;
 			}
 			checkedNonterminal[id] = true;
-			return captured.checkInner();
+			return elements.checkInner();
 		}
 
 		@Override
 		public String toFormat(int tag) {
 			nullCheck();
-			return captured.toFormat(tag);
+			return elements.toFormat(tag);
 		}
 
 		@Override
 		public String toString() {
-			return "[" + nonterminalNameList[id] + "]";
+			return "[" + productionNameList[id] + "]";
 		}
 
 		public void nullCheck() {
-			if (captured == null) {
-				this.captured = nonterminalList[id];
+			if (elements == null) {
+				this.elements = productionList[id];
 			}
 		}
 	}
