@@ -2,7 +2,12 @@ package nez.bx;
 
 import java.io.IOException;
 
+import nez.ParserGenerator;
+import nez.ast.Source;
+import nez.ast.Tree;
 import nez.lang.Grammar;
+import nez.parser.Parser;
+import nez.tool.ast.TreeWriter;
 
 public class Command extends nez.main.Command {
 	@Override
@@ -12,6 +17,39 @@ public class Command extends nez.main.Command {
 		Grammar grammar = this.getSpecifiedGrammar();
 		FormatGenerator gen = new FormatGenerator(outputDirectory, grammarFile);
 		gen.generate(grammar);
+		// Grammar grammar = this.newGrammar();
+		// FormatGenerator gen = new FormatGenerator(outputDirectory,
+		// grammarFile);
+		// gen.generate(grammar);
+		checkInputSource();
+		Parser parser = newParser();
+		TreeWriter tw = this.getTreeWriter("ast xml json", null);
+		while (hasInputSource()) {
+			Source input = nextInputSource();
+			Tree<?> node = parser.parse(input);
+			if (node == null) {
+				parser.showErrors();
+				continue;
+			}
+			if (this.outputDirectory != null) {
+				tw.init(getOutputFileName(input, tw.getFileExtension()));
+			}
+			tw.writeTree(node);
+			ParserGenerator pg = new ParserGenerator();
+			grammar = pg.loadGrammar("format.nez");
+			Parser formatParser = this.strategy.newParser(grammar);
+			input = nextInputSource();
+			Tree<?> formatNode = formatParser.parse(input);
+			if (formatNode == null) {
+				parser.showErrors();
+				continue;
+			}
+			FormatterBuilder builder = new FormatterBuilder();
+			builder.visit(formatNode);
+			Formatter formatter = new Formatter(builder.getContext());
+			String source = formatter.format(node);
+			System.out.println(source);
+		}
 	}
 
 }
