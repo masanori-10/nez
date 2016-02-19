@@ -1399,7 +1399,7 @@ public class FormatGenerator {
 					delayWriteln("");
 					delayWriteln("");
 				}
-				delayWrite("format rep" + id + "()");
+				delayWrite("format rep" + id + "([])");
 				delayWriteln("``");
 				delayWriteln("");
 				delayWriteln("");
@@ -1511,7 +1511,7 @@ public class FormatGenerator {
 					}
 					delayWriteln("");
 				}
-				delayWrite("format rep" + id + "()");
+				delayWrite("format rep" + id + "([])");
 				delayWriteln("``");
 				delayWriteln("");
 			}
