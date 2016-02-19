@@ -89,6 +89,10 @@ public class FormatGenerator {
 		}
 	}
 
+	public String getOutputFileName() {
+		return FileBuilder.toFileName(outputFile, dir, "bxnez");
+	}
+
 	public void makeStandardform() {
 		for (Production rule : grammar) {
 			String nonterminalName = rule.getLocalName();
@@ -1679,7 +1683,7 @@ public class FormatGenerator {
 
 		public void join(LinkedInner target) {
 			if (target.id != -1) {
-				assert (id == -1);
+				assert(id == -1);
 				this.id = target.id;
 				this.before += target.before;
 				this.after = target.after;

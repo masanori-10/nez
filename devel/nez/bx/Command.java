@@ -7,6 +7,7 @@ import nez.ast.Source;
 import nez.ast.Tree;
 import nez.lang.Grammar;
 import nez.parser.Parser;
+import nez.parser.io.CommonSource;
 import nez.tool.ast.TreeWriter;
 
 public class Command extends nez.main.Command {
@@ -17,10 +18,6 @@ public class Command extends nez.main.Command {
 		Grammar grammar = this.getSpecifiedGrammar();
 		FormatGenerator gen = new FormatGenerator(outputDirectory, grammarFile);
 		gen.generate(grammar);
-		// Grammar grammar = this.newGrammar();
-		// FormatGenerator gen = new FormatGenerator(outputDirectory,
-		// grammarFile);
-		// gen.generate(grammar);
 		checkInputSource();
 		Parser parser = newParser();
 		TreeWriter tw = this.getTreeWriter("ast xml json", null);
@@ -38,12 +35,13 @@ public class Command extends nez.main.Command {
 			ParserGenerator pg = new ParserGenerator();
 			grammar = pg.loadGrammar("format.nez");
 			Parser formatParser = this.strategy.newParser(grammar);
-			input = nextInputSource();
+			input = CommonSource.newFileSource(gen.getOutputFileName());
 			Tree<?> formatNode = formatParser.parse(input);
 			if (formatNode == null) {
 				parser.showErrors();
 				continue;
 			}
+			tw.writeTree(formatNode);
 			FormatterBuilder builder = new FormatterBuilder();
 			builder.visit(formatNode);
 			Formatter formatter = new Formatter(builder.getContext());
