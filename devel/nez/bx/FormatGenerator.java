@@ -397,7 +397,6 @@ public class FormatGenerator {
 		// FIXME
 		@Override
 		public Object visitNot(Not e, Object a) {
-			Expression exp = e.get(0);
 			addElement(new NotElement());
 			return null;
 		}
@@ -674,19 +673,16 @@ public class FormatGenerator {
 						write("format " + tagList[formatSet[i].tag] + "(" + label + ")");
 					}
 					writeln("`");
+					inNot = false;
 					if (left != null) {
 						String format = left.toFormat(formatSet[i].tag);
 						if (format != null) {
 							write(format);
 						}
 					}
-					inNot = false;
 					String format = toFormat(formatSet[i].tag);
 					if (format == null) {
 						write("${$value}");
-						if (inNot) {
-							write(" ");
-						}
 					} else {
 						write(format);
 					}
@@ -940,15 +936,14 @@ public class FormatGenerator {
 
 		@Override
 		public LinkedInner[] checkInner() {
-			LinkedInner[] ret = { new LinkedInner() };
-			ret[0].before = " ";
-			return ret;
+			inNot = true;
+			return null;
 		}
 
 		@Override
 		public String toFormat(int tag) {
 			inNot = true;
-			return " ";
+			return null;
 		}
 
 	}
@@ -1024,6 +1019,7 @@ public class FormatGenerator {
 
 		@Override
 		public LinkedInner[] checkInner() {
+			inNot = false;
 			LinkedInner[] ret = { new LinkedInner() };
 			ret[0].id = this.id;
 			return ret;
@@ -1057,6 +1053,7 @@ public class FormatGenerator {
 			if (linkedInner == null) {
 				boolean[] currentCheckedNonterminal = checkedProduction;
 				checkedProduction = new boolean[productionId];
+				inNot = false;
 				linkedInner = inner.checkInner();
 				if (linkedInner == null) {
 					throw new UnTaggedException("UNTAGGED BLOCK EXISTS IN " + productionNameList[calledBy] + " -> " + inner);
@@ -1166,7 +1163,7 @@ public class FormatGenerator {
 		@Override
 		public String toFormat(int tag) throws UnLabeledException {
 			String ret = "";
-
+			inNot = false;
 			if (hasRepetition) {
 				if (!linkedInner[labelFix].before.equals("")) {
 					ret += linkedInner[labelFix].before;
@@ -1220,6 +1217,7 @@ public class FormatGenerator {
 
 		@Override
 		public LinkedInner[] checkInner() {
+			inNot = false;
 			LinkedInner[] ret = { new LinkedInner() };
 			ret[0].before = String.valueOf(cByte);
 			return ret;
@@ -1227,19 +1225,8 @@ public class FormatGenerator {
 
 		@Override
 		public String toFormat(int tag) {
-			if (cByte == '\b') {
-				return "\\b";
-			} else if (cByte == '\t') {
-				return "\\t";
-			} else if (cByte == '\n') {
-				return "\\n";
-			} else if (cByte == '\f') {
-				return "\\f";
-			} else if (cByte == '\r') {
-				return "\\r";
-			} else {
-				return String.valueOf(cByte);
-			}
+			inNot = false;
+			return String.valueOf(cByte);
 		}
 
 		@Override
@@ -1403,7 +1390,7 @@ public class FormatGenerator {
 					for (int j = 0; j < link[i].size; j++) {
 						linkRate[i] *= link[i].get(j).countOption(tag);
 					}
-				} else if (nullBranch != -1) {
+				} else if (nullBranch == -1) {
 					nullBranch = i;
 				}
 				rate += linkRate[i];
@@ -1497,7 +1484,7 @@ public class FormatGenerator {
 					delayWriteln("`");
 					String format = inner.toFormat(tag);
 					if (format != null) {
-						delayWrite(format + " ${rep" + id + "(ns)}`");
+						delayWrite(format + "${rep" + id + "(ns)}`");
 					} else {
 						delayWrite("${rep" + id + "(ns)}`");
 					}
@@ -1611,7 +1598,7 @@ public class FormatGenerator {
 					delayWriteln("`");
 					String format = inner.toFormat(tag);
 					if (format != null) {
-						delayWrite(inner.toFormat(tag) + " ${rep" + id + "(ns)}`");
+						delayWrite(inner.toFormat(tag) + "${rep" + id + "(ns)}`");
 					} else {
 						delayWrite("${rep" + id + "(ns)}`");
 					}
@@ -1647,7 +1634,23 @@ public class FormatGenerator {
 		}
 
 		@Override
+		public LinkedInner[] checkInner() {
+			if (inNot) {
+				inNot = false;
+				LinkedInner[] ret = { new LinkedInner() };
+				ret[0].before = " ";
+				return ret;
+			}
+			return null;
+		}
+
+		@Override
 		public String toFormat(int tag) throws UnLabeledException {
+			// FIXME
+			if (inNot) {
+				inNot = false;
+				return " ";
+			}
 			if (id == -1) {
 				return null;
 			}
