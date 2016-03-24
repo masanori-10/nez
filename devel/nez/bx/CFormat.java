@@ -14,10 +14,10 @@ public class CFormat extends Command {
 	@Override
 	public void exec() throws IOException {
 		strategy.Optimization = false;
-		Grammar grammar = this.newGrammar();
+		Grammar grammar = this.getSpecifiedGrammar();
 		checkInputSource();
 		Parser parser = newParser();
-		TreeWriter tw = this.getTreeWriter("ast xml json");
+		TreeWriter tw = this.getTreeWriter("ast xml json", "line");
 		while (hasInputSource()) {
 			Source input = nextInputSource();
 			Tree<?> node = parser.parse(input);

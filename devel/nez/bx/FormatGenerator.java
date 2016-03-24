@@ -299,16 +299,18 @@ public class FormatGenerator {
 				Elements[] newList = new Elements[elementsStack.length * 2];
 				System.arraycopy(elementsStack, 0, newList, 0, elementsStack.length);
 				elementsStack = newList;
+				StackState[] newList2 = new StackState[stackStates.length * 2];
+				System.arraycopy(stackStates, 0, newList2, 0, stackStates.length);
+				stackStates = newList2;
 			}
-			for (int i = 1; i < e.size(); i++) {
+			for (int i = 0; i < e.size(); i++) {
 				elementsStack[++stackTop] = new Elements();
+				stackStates[stackTop] = new StackState();
 				visit(e.get(i));
 				branch[i] = elementsStack[stackTop--];
 			}
 			Element choice = new ChoiceElement(branch);
-			if (inFirst) {
-				currentLeft = choice;
-			}
+			currentLeft = choice;
 			addElement(choice);
 			return null;
 		}

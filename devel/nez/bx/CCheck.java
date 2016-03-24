@@ -10,7 +10,7 @@ import nez.parser.Parser;
 import nez.parser.io.CommonSource;
 import nez.tool.ast.TreeWriter;
 
-public class Command extends nez.main.Command {
+public class CCheck extends nez.main.Command {
 	@Override
 	public void exec() throws IOException {
 		/* Setting requird options */
@@ -20,7 +20,7 @@ public class Command extends nez.main.Command {
 		gen.generate(grammar);
 		checkInputSource();
 		Parser parser = newParser();
-		TreeWriter tw = this.getTreeWriter("ast xml json", null);
+		TreeWriter tw = this.getTreeWriter("ast xml json", "line");
 		while (hasInputSource()) {
 			Source input = nextInputSource();
 			Tree<?> node = parser.parse(input);
