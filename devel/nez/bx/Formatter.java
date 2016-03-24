@@ -143,6 +143,9 @@ public class Formatter extends AbstractFormatter {
 		if (formatter != null) {
 			return formatter.format(this, node);
 		}
+		if (demo) {
+			return node.toString();
+		}
 		throw new RuntimeException("tag formatter \"" + node.getTag() + "\" is not found");
 	}
 

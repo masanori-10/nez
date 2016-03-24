@@ -9,7 +9,6 @@ import nez.lang.Grammar;
 import nez.lang.ast.GrammarLoader;
 import nez.lang.ast.NezGrammarCombinator;
 import nez.parser.Parser;
-import nez.parser.ParserException;
 import nez.parser.ParserStrategy;
 import nez.parser.io.CommonSource;
 import nez.parser.io.StringSource;
@@ -143,9 +142,10 @@ public class ParserGenerator {
 	private GrammarExtension lookupGrammarExtension(String fileExtension) throws IOException {
 		GrammarExtension ext = getGrammarExtension(fileExtension);
 		if (ext == null) {
-			if (!fileExtension.equals("nez")) {
-				throw new ParserException("undefined grammar extension: " + fileExtension);
-			}
+			// if (!fileExtension.equals("nez")) {
+			// throw new ParserException("undefined grammar extension: " +
+			// fileExtension);
+			// }
 			class P extends GrammarExtension {
 				P(ParserGenerator factory) {
 					super(null);

@@ -642,69 +642,68 @@ public class FormatGenerator {
 		public void writeFormat(int capturedId) throws UnLabeledException, UnIndividedListException {
 			for (int i = 0; i < size; i++) {
 				boolean needFormatEmpty = false;
-				// if (formatSet[i].link != null ||
-				// !checkedNullLabelTag[formatSet[i].tag]) {
-				for (int labelProgression = 0, tagProgression = 0; true; tagProgression++) {
-					hasRepetition = false;
-					hasOnly = true;
-					hasOption = false;
-					needAddZero = false;
-					LabelSet labelSet = new LabelSet(labelProgression, tagProgression);
-					String label = optionFix(formatSet[i].link, labelSet, formatSet[i].tag);
-					if (labelSet.labelProgression > 0) {
-						break;
-					}
-					if (labelSet.tagProgression > 0) {
-						labelProgression++;
-						tagProgression = -1;
-						continue;
-					}
-					if (label == null) {
-						label = "";
-						checkedNullLabelTag[formatSet[i].tag] = true;
-						if (hasRepetition) {
-							needFormatEmpty = true;
+				if (formatSet[i].link != null || !checkedNullLabelTag[formatSet[i].tag]) {
+					for (int labelProgression = 0, tagProgression = 0; true; tagProgression++) {
+						hasRepetition = false;
+						hasOnly = true;
+						hasOption = false;
+						needAddZero = false;
+						LabelSet labelSet = new LabelSet(labelProgression, tagProgression);
+						String label = optionFix(formatSet[i].link, labelSet, formatSet[i].tag);
+						if (labelSet.labelProgression > 0) {
+							break;
+						}
+						if (labelSet.tagProgression > 0) {
+							labelProgression++;
+							tagProgression = -1;
 							continue;
 						}
-					}
-					if (hasRepetition) {
-						write("format " + tagList[formatSet[i].tag] + "(n" + label + ":ns)");
-					} else {
-						write("format " + tagList[formatSet[i].tag] + "(" + label + ")");
-					}
-					writeln("`");
-					inNot = false;
-					if (left != null) {
-						String format = left.toFormat(formatSet[i].tag);
-						if (format != null) {
+						if (label == null) {
+							label = "";
+							checkedNullLabelTag[formatSet[i].tag] = true;
+							if (hasRepetition) {
+								needFormatEmpty = true;
+								continue;
+							}
+						}
+						if (hasRepetition) {
+							write("format " + tagList[formatSet[i].tag] + "(n" + label + ":ns)");
+						} else {
+							write("format " + tagList[formatSet[i].tag] + "(" + label + ")");
+						}
+						writeln("`");
+						inNot = false;
+						if (left != null) {
+							String format = left.toFormat(formatSet[i].tag);
+							if (format != null) {
+								write(format);
+							}
+						}
+						String format = toFormat(formatSet[i].tag);
+						if (format == null) {
+							write("${$value}");
+						} else {
 							write(format);
 						}
-					}
-					String format = toFormat(formatSet[i].tag);
-					if (format == null) {
-						write("${$value}");
-					} else {
-						write(format);
-					}
-					if (right != null) {
-						format = right.toFormat(formatSet[i].tag);
-						if (format != null) {
-							write(format);
+						if (right != null) {
+							format = right.toFormat(formatSet[i].tag);
+							if (format != null) {
+								write(format);
+							}
+						}
+						write("`");
+						writeln("");
+						if (needAddZero && !hasOption) {
+							needFormatEmpty = true;
 						}
 					}
-					write("`");
-					writeln("");
-					if (needAddZero && !hasOption) {
-						needFormatEmpty = true;
+					if (needFormatEmpty) {
+						write("format " + tagList[formatSet[i].tag] + "([])");
+						writeln("`${$value}`");
+						writeln("");
 					}
+					activateDelay();
 				}
-				if (needFormatEmpty) {
-					write("format " + tagList[formatSet[i].tag] + "([])");
-					writeln("`${$value}`");
-					writeln("");
-				}
-				activateDelay();
-				// }
 			}
 		}
 
